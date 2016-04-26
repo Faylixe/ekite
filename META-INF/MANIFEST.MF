@@ -8,7 +8,10 @@ Bundle-Vendor: Faylixe
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources;bundle-version="3.9.1",
- org.eclipse.core.filebuffers;bundle-version="3.5.400"
+ org.eclipse.core.filebuffers;bundle-version="3.5.400",
+ org.eclipse.ui.ide;bundle-version="3.10.2",
+ org.eclipse.ui.editors;bundle-version="3.8.200",
+ org.eclipse.jface.text;bundle-version="3.9.2"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: dependencies/gson-2.3.1.jar,
