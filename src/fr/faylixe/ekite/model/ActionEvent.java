@@ -57,13 +57,11 @@ public class ActionEvent extends BaseEvent {
 		 * 
 		 * @param pluginId Plugin identifier that send this event.
 		 * @param filename Name of the currently edited file.
-		 * @param text Buffer content of the currently edited file.
 		 */
 		public FocusEvent(
 				final String pluginId,
-				final String filename,
-				final String text) {
-			super(pluginId, filename, FOCUS, text);
+				final String filename) {
+			super(pluginId, filename, FOCUS, FOCUS);
 		}
 	
 	}
@@ -76,13 +74,11 @@ public class ActionEvent extends BaseEvent {
 		 * 
 		 * @param pluginId Plugin identifier that send this event.
 		 * @param filename Name of the currently edited file.
-		 * @param text Buffer content of the currently edited file.
 		 */
 		public LostFocusEvent(
 				final String pluginId,
-				final String filename,
-				final String text) {
-			super(pluginId, filename, LOST_FOCUS, text);
+				final String filename) {
+			super(pluginId, filename, LOST_FOCUS, LOST_FOCUS);
 		}
 	
 	}

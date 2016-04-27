@@ -11,34 +11,42 @@ import com.google.gson.annotations.SerializedName;
  */
 public final class Suggestion extends BaseEvent {
 
-	/** **/
+	/** Suggestion type. **/
 	@SerializedName("type")
 	private final String type;
 	
-	/** **/
+	/** Suggestion score (used by Kite backend). **/
 	@SerializedName("score")
 	private final double score;
 
-	/** **/
+	/**
+	 * MD5 of the file as it was when this
+	 * suggestion was computed in lowercase
+	 * hex string.
+	 */
 	@SerializedName("file_md5")
 	private final String md5;
 	
-	/** **/
+	/**
+	 * Base64 encoded version of file when
+	 * suggestion was computed.
+	 */
 	@SerializedName("file_base64")
 	private final String base64;
 
-	/** **/
+	/** List of diffs this suggestion is proposing. **/
 	@SerializedName("diffs")
 	private final List<Diff> diffs;
 
 	/**
+	 * Default constructor.
 	 * 
-	 * @param pluginId
-	 * @param filename
-	 * @param type
-	 * @param score
-	 * @param md5
-	 * @param base64
+	 * @param pluginId Plugin identifier that send this event.
+	 * @param filename Name of the currently edited file.
+	 * @param type Suggestion type.
+	 * @param score Suggestion score.
+	 * @param md5 MD5 of the file.
+	 * @param base64 Base64 encoded version of file.
 	 */
 	public Suggestion(
 			final String pluginId,
@@ -56,8 +64,9 @@ public final class Suggestion extends BaseEvent {
 	}
 	
 	/**
+	 * Adds the given ``diff``to the diffs list.
 	 * 
-	 * @param diff
+	 * @param diff Diff instance to add.
 	 * @see List#add(Object)
 	 */
 	public void addDiff(final Diff diff) {

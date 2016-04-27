@@ -17,6 +17,9 @@ import com.google.gson.Gson;
 public final class EventReceiver implements Runnable {
 
 	/** **/
+	private static final String IDENTIFIER_PREFIX = "udp://127.0.0.1:";
+
+	/** **/
 	private static final String HOSTNAME = "127.0.0.1";
 
 	/** **/
@@ -40,6 +43,25 @@ public final class EventReceiver implements Runnable {
 		this.gson = new Gson();
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
+	public String getPluginIdentifier() {
+		final StringBuffer buffer = new StringBuffer();
+		buffer.append(IDENTIFIER_PREFIX);
+		buffer.append(socket.getLocalPort());
+		return buffer.toString();
+	}
+
+	/**
+	 * 
+	 */
+	public void start() {
+		final Thread thread = new Thread(this);
+		thread.start();
+	}
+ 
 	/**
 	 * 
 	 */

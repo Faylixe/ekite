@@ -1,6 +1,8 @@
 // Contents of this plugin will be reset by Kite on start. Changes you make are not guaranteed to persist.
 package fr.faylixe.ekite;
 
+import java.io.IOException;
+
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.ui.IPageListener;
@@ -13,7 +15,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-import fr.faylixe.ekite.backup.Event;
+import fr.faylixe.ekite.internal.EventSender;
+import fr.faylixe.ekite.internal.EventReceiver;
 import fr.faylixe.ekite.internal.PartListener;
 
 /**
@@ -28,26 +31,27 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	private static EKitePlugin plugin;
 
 	/** **/
-	private static final String SOURCE = "eclipse";
-
-	/** **/
-	private final Event source;
-
-	/** **/
 	private final PartListener listener;
+
+	/** **/
+	private EventReceiver receiver;
+
+	/** **/
+	private EventSender sender;
 
 	/**
 	 * Default constructor.
 	 */
 	public EKitePlugin() {
-		this.source = new Event(SOURCE);
-		this.listener = new PartListener(source);
+		this.listener = new PartListener(null);
 	}
 
 	/** {@inheritDoc} **/
 	@Override
 	public void start(final BundleContext context) throws Exception {
 		super.start(context);
+		this.receiver = EventReceiver.create();
+		this.sender = EventSender.create(receiver);
 		plugin = this;
 	}
 
@@ -129,14 +133,25 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	/** {@inheritDoc} **/
 	@Override
 	public void focusGained(final FocusEvent event) {
-
+		try {
+			sender.sendFocus();
+		}
+		catch (final IOException e) {
+			// TODO : Handle error.
+			e.printStackTrace();
+		}
 	}
 
 	/** {@inheritDoc} **/
 	@Override
 	public void focusLost(final FocusEvent event) {
-		// TODO Auto-generated method stub
-		
+		try {
+			sender.sendLostFocus();
+		}
+		catch (final IOException e) {
+			// TODO : Handle error.
+			e.printStackTrace();
+		}
 	}
 
 }

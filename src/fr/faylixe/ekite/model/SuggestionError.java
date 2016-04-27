@@ -14,19 +14,19 @@ public final class SuggestionError {
 
 	/** **/
 	@SerializedName("user_buffer")
-	private String user_buffer;
+	private String userBuffer;
 	
 	/** **/
 	@SerializedName("user_md5")
-	private String user_md5;
+	private String userMd5;
 	
 	/** **/
 	@SerializedName("expected_md5")
-	private String expected_md5;
+	private String expectedMd5;
 	
 	/** **/
 	@SerializedName("expected_buffer")
-	private String expected_buffer;
+	private String expectedBuffer;
 	
 	/** **/
 	@SerializedName("suggestion")
