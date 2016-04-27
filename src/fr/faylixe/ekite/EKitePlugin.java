@@ -129,10 +129,7 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	/** {@inheritDoc} **/
 	@Override
 	public void focusGained(final FocusEvent event) {
-		source
-			.forFile(listener.getCurrentFilename())
-			.toFocusEvent()
-			.withText();
+
 	}
 
 	/** {@inheritDoc} **/

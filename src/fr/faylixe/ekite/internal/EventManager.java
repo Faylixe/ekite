@@ -84,23 +84,23 @@ public final class EventManager {
 	 * @param suggestion
 	 * @throws Exception
 	 */
-	public void sendSuggestionError(
-			final String message,
-			final String filename,
-			final String userBuffer,
-			final String userMD5,
-			final String expectedBuffer,
-			final String expectedMD5,
-			final Suggestion suggestion) throws Exception {
-		final OutboundSuggestionErrorDetails text = new OutboundSuggestionErrorDetails();
-		text.message = message;
-		text.user_buffer = userBuffer;
-		text.user_md5 = userMD5;
-		text.expected_md5 = expectedMD5;
-		text.expected_buffer = expectedBuffer;
-		text.suggestion = suggestion;
-		sendError(filename, new Gson().toJson(text));
-	}
+//	public void sendSuggestionError(
+//			final String message,
+//			final String filename,
+//			final String userBuffer,
+//			final String userMD5,
+//			final String expectedBuffer,
+//			final String expectedMD5,
+//			final Suggestion suggestion) throws Exception {
+//		final OutboundSuggestionErrorDetails text = new OutboundSuggestionErrorDetails();
+//		text.message = message;
+//		text.user_buffer = userBuffer;
+//		text.user_md5 = userMD5;
+//		text.expected_md5 = expectedMD5;
+//		text.expected_buffer = expectedBuffer;
+//		text.suggestion = suggestion;
+//		sendError(filename, new Gson().toJson(text));
+//	}
 
 	/**
 	 * 
@@ -109,12 +109,12 @@ public final class EventManager {
 	 * @throws Exception
 	 */
 	public void sendError(final String filename, final String text) throws Exception {
-		final OutboundErrorEvent event = new OutboundErrorEvent();
-		event.action = "error";
-		event.filename = filename;
-		event.text = text;
-		event.pluginId = pluginId;
-		send(new Gson().toJson(event));
+//		final OutboundErrorEvent event = new OutboundErrorEvent();
+//		event.action = "error";
+//		event.filename = filename;
+//		event.text = text;
+//		event.pluginId = pluginId;
+//		send(new Gson().toJson(event));
 	}
 
 	/**
