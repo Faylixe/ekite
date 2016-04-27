@@ -1,4 +1,4 @@
-package fr.faylixe.ekite.internal;
+package fr.faylixe.ekite.model;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -18,7 +18,7 @@ public final class Selection {
 	private final int end;
 
 	/** Pre computed selection hash code. **/
-	private final int hashcode;
+	private final transient int hashcode;
 
 	/**
 	 * Default constructor.

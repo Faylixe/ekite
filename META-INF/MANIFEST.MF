@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: eKite
-Bundle-SymbolicName: fr.faylixe.ekite
+Bundle-SymbolicName: fr.faylixe.ekite;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: fr.faylixe.ekite.EKitePlugin
 Bundle-Vendor: Faylixe

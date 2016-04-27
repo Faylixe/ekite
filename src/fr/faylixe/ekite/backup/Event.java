@@ -1,10 +1,12 @@
-package fr.faylixe.ekite.internal;
+package fr.faylixe.ekite.backup;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
+
+import fr.faylixe.ekite.model.Selection;
 
 /**
  * Represents a text buffer event which
@@ -23,8 +25,14 @@ public final class Event {
 	/** Name for the EDIT action. **/
 	private static final String EDIT = "edit";
 
-	/** Name for the EDIT action. **/
+	/** Name for the SELECTION action. **/
 	private static final String SELECTION = "selection";
+
+	/** Name for the FOCUS action. **/
+	private static final String FOCUS = "focus";
+
+	/** Name for the LOST_FOCUS action. **/
+	private static final String LOST_FOCUS = "lost_focus";
 
 	/** Name for SKIP action.**/
 	private static final String SKIP = "skip";
@@ -50,14 +58,14 @@ public final class Event {
 
 	/** Selections. **/
 	@SerializedName("selections")
-	private final Set<Selection> selections;
+	private final List<Selection> selections;
 
 	/** Text content. **/
 	@SerializedName("text")
 	private final String text;
 
 	/** Event for too large file. **/
-	private final Event tooLarge;
+	private final transient Event tooLarge;
 
 	/**
 	 * Text less constructor.
@@ -87,7 +95,7 @@ public final class Event {
 	 * @param text Text content.
 	 */
 	private Event(final String source, final String filename, final String action, final String text) {
-		this(source, filename, action, text, new Event(source, SKIP, TOO_LARGE, null));
+		this(source, filename, action, text, new Event(source, filename, SKIP, TOO_LARGE, null));
 	}
 	
 	/**
@@ -105,7 +113,7 @@ public final class Event {
 		this.action = action;
 		this.text = text;
 		this.tooLarge = tooLarge;
-		this.selections = new HashSet<Selection>();
+		this.selections = new ArrayList<Selection>();
 		this.pluginId = null;
 	}
 
@@ -114,9 +122,11 @@ public final class Event {
 	 * Adds the given ``selection`` to this event.
 	 * 
 	 * @param selection Selection to add.
+	 * @return Reference of this event.
 	 */
-	public void addSelection(final Selection selection) {
+	public Event withSelection(final Selection selection) {
 		selections.add(selection);
+		return this;
 	}
 	
 	/**
@@ -145,7 +155,7 @@ public final class Event {
 	 * @return Created event copy.
 	 */
 	public Event withText(final String text) {
-		return new Event(source, filename, action, text);
+		return new Event(source, filename, action, text, tooLarge);
 	}
 
 	/**
@@ -155,7 +165,27 @@ public final class Event {
 	 * @return Transformed event instance.
 	 */
 	public Event toEditEvent() {
-		return new Event(source, filename, EDIT, text);
+		return new Event(source, filename, EDIT, text, tooLarge);
+	}
+
+	/**
+	 * Transforms this event into a ``focus``event.
+	 * Created event won't have any selection.
+	 * 
+	 * @return Transformed event instance.
+	 */
+	public Event toFocusEvent() {
+		return new Event(source, filename, FOCUS, text, tooLarge);
+	}
+
+	/**
+	 * Transforms this event into a ``lost_focus``event.
+	 * Created event won't have any selection.
+	 * 
+	 * @return Transformed event instance.
+	 */
+	public Event toLostFocusEvent() {
+		return new Event(source, filename, LOST_FOCUS, text, tooLarge);
 	}
 	
 	/**
@@ -165,7 +195,7 @@ public final class Event {
 	 * @return Transformed event instance.
 	 */
 	public Event toSelectionEvent() {
-		return new Event(source, filename, SELECTION, text);
+		return new Event(source, filename, SELECTION, text, tooLarge);
 	}
 
 	/**
@@ -178,7 +208,7 @@ public final class Event {
 	 */
 	public String toJSON() {
 		if (action == null) {
-			throw new IllegalStateException("");
+			throw new IllegalStateException("No action provided.");
 		}
 		if (text == null) {
 			return withText("").toJSON();

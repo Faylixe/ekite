@@ -1,4 +1,4 @@
-package fr.faylixe.ekite.internal;
+package fr.faylixe.ekite.backup;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -60,6 +60,9 @@ public final class EventSender implements Closeable {
 	public void close() {
 		socket.close();
 	}
+	
+	/** Unique instance. **/
+	private static EventSender instance;
 
 	/**
 	 * Creates and returns a {@link EventSender} instance.
@@ -67,10 +70,15 @@ public final class EventSender implements Closeable {
 	 * @return Created instance.
 	 * @throws IOException If any error occurs while creating associated socket.
 	 */
-	public static EventSender create() throws IOException {
-		final DatagramSocket socket = new DatagramSocket();
-		socket.setSendBufferSize(BUFFER_SIZE);
-		return new EventSender(socket);
+	public static EventSender get() throws IOException {
+		synchronized (EventSender.class) {
+			if (instance == null) {
+				final DatagramSocket socket = new DatagramSocket();
+				socket.setSendBufferSize(BUFFER_SIZE);
+				instance = new EventSender(socket);
+			}
+		}
+		return instance;
 	}
 
 }
