@@ -6,6 +6,7 @@ import java.util.List;
 import com.google.gson.annotations.SerializedName;
 
 /**
+ * TODO : Javadoc.
  * 
  * @author fv
  */
@@ -17,16 +18,17 @@ public class NotificationEvent extends ActionEvent {
 	/** Name of the ``selection`` action.**/
 	private static final String SELECTION = "selection";
 
-	/** **/
+	/** List of the selection over the currently edited file. . **/
 	@SerializedName("selections")
 	private List<Selection> selections;
 
 	/**
+	 * Default constructor.
 	 * 
-	 * @param pluginId
-	 * @param filename
-	 * @param action
-	 * @param text
+	 * @param pluginId Plugin identifier that send this event.
+	 * @param filename Name of the currently edited file.
+	 * @param action Name of the action performed.
+	 * @param text Buffer content of the currently edited file.
 	 */
 	protected NotificationEvent(
 			final String pluginId,
@@ -38,16 +40,17 @@ public class NotificationEvent extends ActionEvent {
 	}
 
 	/**
+	 * Adds the given ``selection`` to the selection list.
 	 * 
-	 * @param selection
+	 * @param selection Selection to add.
 	 * @see List#add(Object)
 	 */
 	public void addSelection(final Selection selection) {
 		selections.add(selection);
 	}
 
-	/** **/
-	public static final class Edit extends NotificationEvent {	
+	/** Shortcut for the ``edit`` action. **/
+	public static final class EditEvent extends NotificationEvent {	
 		
 		/**
 		 * Default constructor. 
@@ -56,7 +59,7 @@ public class NotificationEvent extends ActionEvent {
 		 * @param filename Name of the currently edited file.
 		 * @param text Buffer content of the currently edited file.
 		 */
-		public Edit(
+		public EditEvent(
 				final String pluginId,
 				final String filename,
 				final String text) {
@@ -65,8 +68,8 @@ public class NotificationEvent extends ActionEvent {
 	
 	}
 	
-	/** **/
-	public static final class Selection extends NotificationEvent {	
+	/** Shortcut for the ``selection`` action. **/
+	public static final class SelectionEvent extends NotificationEvent {	
 		
 		/**
 		 * Default constructor. 
@@ -75,7 +78,7 @@ public class NotificationEvent extends ActionEvent {
 		 * @param filename Name of the currently edited file.
 		 * @param text Buffer content of the currently edited file.
 		 */
-		public Selection(
+		public SelectionEvent(
 				final String pluginId,
 				final String filename,
 				final String text) {

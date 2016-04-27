@@ -3,7 +3,7 @@ package fr.faylixe.ekite.model;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * An {@link ActionEvent}
+ * TODO : Javadoc
  * 
  * @author fv
  */
@@ -14,8 +14,11 @@ public class ActionEvent extends BaseEvent {
 	
 	/** Name of the ``lost_focus`` action.**/
 	private static final String LOST_FOCUS = "lost_focus";
+
+	/** Name of the ``error`` action.**/
+	private static final String ERROR = "error";
 		
-	/** **/
+	/** Source editor that trigger this event. **/
 	@SerializedName("source")
 	private final String source;
 
@@ -46,8 +49,8 @@ public class ActionEvent extends BaseEvent {
 		this.text = text;
 	}
 
-	/** **/
-	public static final class Focus extends ActionEvent {	
+	/** Shortcut for the ``focus`` action. **/
+	public static final class FocusEvent extends ActionEvent {	
 		
 		/**
 		 * Default constructor. 
@@ -56,7 +59,7 @@ public class ActionEvent extends BaseEvent {
 		 * @param filename Name of the currently edited file.
 		 * @param text Buffer content of the currently edited file.
 		 */
-		public Focus(
+		public FocusEvent(
 				final String pluginId,
 				final String filename,
 				final String text) {
@@ -65,8 +68,8 @@ public class ActionEvent extends BaseEvent {
 	
 	}
 
-	/** **/
-	public static final class LostFocus extends NotificationEvent {	
+	/** Shortcut for the ``lost_focus`` action. **/
+	public static final class LostFocusEvent extends NotificationEvent {	
 		
 		/**
 		 * Default constructor. 
@@ -75,7 +78,7 @@ public class ActionEvent extends BaseEvent {
 		 * @param filename Name of the currently edited file.
 		 * @param text Buffer content of the currently edited file.
 		 */
-		public LostFocus(
+		public LostFocusEvent(
 				final String pluginId,
 				final String filename,
 				final String text) {
@@ -84,4 +87,22 @@ public class ActionEvent extends BaseEvent {
 	
 	}
 
+	/** Shortcut for the ``error`` action. **/
+	public static final class ErrorEvent extends NotificationEvent {	
+		
+		/**
+		 * Default constructor. 
+		 * 
+		 * @param pluginId Plugin identifier that send this event.
+		 * @param filename Name of the currently edited file.
+		 * @param text Buffer content of the currently edited file.
+		 */
+		public ErrorEvent(
+				final String pluginId,
+				final String filename,
+				final String text) {
+			super(pluginId, filename, ERROR, text);
+		}
+	
+	}
 }
