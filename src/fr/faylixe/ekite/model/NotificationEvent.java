@@ -18,6 +18,12 @@ public class NotificationEvent extends ActionEvent {
 	/** Name of the ``selection`` action.**/
 	private static final String SELECTION = "selection";
 
+	/** Name of the ``skip`` action. **/
+	private static final String SKIP = "skip";
+
+	/** Skip action text. **/
+	private static final String TOO_LARGE = "file_too_large";
+
 	/** List of the selection over the currently edited file. . **/
 	@SerializedName("selections")
 	private List<Selection> selections;
@@ -87,4 +93,20 @@ public class NotificationEvent extends ActionEvent {
 	
 	}
 
+	/** Shortcut for the ``skip`` action. **/
+	public static final class SkipEvent extends NotificationEvent {	
+		
+		/**
+		 * Default constructor. 
+		 * 
+		 * @param pluginId Plugin identifier that send this event.
+		 * @param filename Name of the currently edited file.
+		 */
+		public SkipEvent(
+				final String pluginId,
+				final String filename) {
+			super(pluginId, filename, SKIP, TOO_LARGE);
+		}
+	
+	}
 }

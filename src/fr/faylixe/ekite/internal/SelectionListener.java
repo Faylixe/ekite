@@ -7,10 +7,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 
-import fr.faylixe.ekite.backup.Event;
-import fr.faylixe.ekite.backup.EventSender;
-import fr.faylixe.ekite.model.Selection;
-
 /**
  * 
  * @author fv
@@ -18,14 +14,14 @@ import fr.faylixe.ekite.model.Selection;
 public final class SelectionListener implements ISelectionChangedListener {
 
 	/** **/
-	private final Event fileEvent;
+	private final EventSender sender;
 
 	/**
 	 * 
 	 * @param fileEvent
 	 */
-	public SelectionListener(final Event fileEvent) {
-		this.fileEvent = fileEvent;
+	public SelectionListener(final EventSender sender) {
+		this.sender = sender;
 	}
 
 	/** {@inheritDoc} **/
@@ -35,14 +31,10 @@ public final class SelectionListener implements ISelectionChangedListener {
 		if (selection instanceof ITextSelection) {
 			final ITextSelection textSelection = (ITextSelection) selection;
 			try {
-				final String text = textSelection.getText();
-				System.out.println("Selection is text : " + text);
-				final Event selectionEvent = fileEvent
-						.toSelectionEvent()
-						.withText(text)
-						.withSelection(new Selection(0, text.length()));
-				EventSender.get().send(selectionEvent);
-				System.out.println("Selection event sent : " + selectionEvent.toJSON());
+				sender.sendSelection(
+						"",	 // TODO : send current document content.
+						textSelection.getOffset(),
+						textSelection.getOffset() + textSelection.getLength());
 			}
 			catch (final IOException e) {
 				e.printStackTrace();

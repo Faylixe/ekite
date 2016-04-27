@@ -58,6 +58,15 @@ public final class EventSender {
 	}
 
 	/**
+	 * Current filename setter.
+	 * 
+	 * @param filename Name of the currently edited file.
+	 */
+	public void setCurrentFilename(final String filename) {
+		this.currentFilename = filename;
+	}
+
+	/**
 	 * 
 	 * @param text
 	 * @param start

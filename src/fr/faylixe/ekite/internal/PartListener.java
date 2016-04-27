@@ -10,9 +10,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import fr.faylixe.ekite.backup.Event;
-import fr.faylixe.ekite.backup.EventSender;
-
 /**
  * 
  * @author fv
@@ -20,32 +17,17 @@ import fr.faylixe.ekite.backup.EventSender;
 public final class PartListener implements IPartListener2 {
 
 	/** **/
-	private final Event source;
+	private final EventSender sender;
 
 	/** **/
 	private SelectionListener currentSelectionListener;
-
-	/** **/
-	private IEditorInput currentEditorInput;
 
 	/**
 	 * 
 	 * @param source
 	 */
-	public PartListener(final Event source) {
-		this.source = source;
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	public String getCurrentFilename() {
-		final IFile file = (IFile) currentEditorInput.getAdapter(IFile.class);
-		if (file == null) {
-			
-		}
-		return null;
+	public PartListener(final EventSender sender) {
+		this.sender = sender;
 	}
 
 	/** {@inheritDoc} **/
@@ -63,13 +45,13 @@ public final class PartListener implements IPartListener2 {
 	/** {@inheritDoc} **/
 	@Override
 	public void partClosed(final IWorkbenchPartReference partRef) {
-		// Do nothing.
+		unconfigure(partRef);
 	}
 
 	/** {@inheritDoc} **/
 	@Override
 	public void partDeactivated(final IWorkbenchPartReference partRef) {
-		// Do nothing.
+		unconfigure(partRef);
 	}
 
 	/** {@inheritDoc} **/
@@ -81,7 +63,7 @@ public final class PartListener implements IPartListener2 {
 	/** {@inheritDoc} **/
 	@Override
 	public void partHidden(final IWorkbenchPartReference partRef) {
-		// Do nothing.
+		unconfigure(partRef);
 	}
 
 	/** {@inheritDoc} **/
@@ -106,18 +88,48 @@ public final class PartListener implements IPartListener2 {
 			final ITextEditor editor = (ITextEditor) part;
 			final IEditorInput input = editor.getEditorInput();
 			if (input != null) {
-				currentEditorInput = input;
-				final Event fileEvent = source.forFile(input.getName());
-				try {
-					EventSender.get().send(fileEvent.toFocusEvent());
-				}
-				catch (final IOException e) {
-					e.printStackTrace();
-				}
-				configureSelectionListener(editor, fileEvent);
+				configureCurrentFile(input);
+				configureSelectionListener(editor);
 	//			final IDocumentProvider documentProvider = editor.getDocumentProvider();
 	//			final IDocument document = documentProvider.getDocument(editor.getEditorInput());
 	//			document.addDocumentListener(null);
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param partRef
+	 */
+	private void unconfigure(final IWorkbenchPartReference partRef) {
+		final IWorkbenchPart part = partRef.getPart(false);
+		if (part != null && part instanceof ITextEditor) {
+			final ITextEditor editor = (ITextEditor) part;
+			final ISelectionProvider selectionProvider = editor.getSelectionProvider();
+			selectionProvider.removeSelectionChangedListener(currentSelectionListener);
+			currentSelectionListener = null;
+		}
+	}
+
+	/**
+	 * 
+	 * @param input
+	 */
+	private void configureCurrentFile(final IEditorInput input) {
+		final Object adapter = input.getAdapter(IFile.class);
+		if (adapter != null) {
+			final IFile file = (IFile) adapter;
+			try {
+				final String path = file
+					.getRawLocation()
+					.toFile()
+					.getCanonicalPath();
+				sender.setCurrentFilename(path);
+				sender.sendFocus();
+			}
+			catch (final IOException e) {
+				// TODO : Handle error properly.
+				e.printStackTrace();
 			}
 		}
 	}
@@ -127,12 +139,12 @@ public final class PartListener implements IPartListener2 {
 	 * @param editor
 	 * @param event
 	 */
-	private void configureSelectionListener(final ITextEditor editor, final Event event) {
+	private void configureSelectionListener(final ITextEditor editor) {
 		final ISelectionProvider provider = editor.getSelectionProvider();
 		if (currentSelectionListener != null) {
 			provider.removeSelectionChangedListener(currentSelectionListener);
 		}
-		currentSelectionListener = new SelectionListener(event);
+		currentSelectionListener = new SelectionListener(sender);
 		provider.addSelectionChangedListener(currentSelectionListener);
 		
 	}
