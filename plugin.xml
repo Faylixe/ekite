@@ -8,8 +8,27 @@
       </startup>
    </extension>
    <extension
-         point="org.eclipse.ui.startup">
-      <startup></startup>
+         point="org.eclipse.core.resources.markers"
+         id="fr.faylixe.ekite.marker"
+         name="kite">
+         <super type="org.eclipse.core.resources.markers"/>
+         <persistent value="true"/>
+   </extension>
+   <extension
+   		 point="org.eclipse.ui.editors.annotationTypes">
+		 <type
+		 	super="org.eclipse.ui.editors.texteditor.warning"
+		 	markerType="fr.faylixe.ekite.marker"
+		 	name="fr.faylixe.ekite.annotation"
+		 	markerSeverity="1" />
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+         <specification
+         	annotationType="fr.faylixe.ekite.annotation"
+         	icon="icons/kite.png"
+         	verticalRulerPreferenceKey="ekiteIndicationInVerticalRuler"
+         	verticalRulerPreferenceValue="true"/>
    </extension>
 
 </plugin>

@@ -7,7 +7,12 @@ import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 
@@ -25,6 +30,9 @@ import fr.faylixe.ekite.model.Suggestion;
  */
 public final class EventReceiver implements Runnable {
 
+	/** Custom marker id. **/
+	private static final String MARKER_ID = "fr.faylixe.ekite.marker";
+
 	/** Plugin identifier prefix used. **/
 	private static final String IDENTIFIER_PREFIX = "udp://127.0.0.1:";
 
@@ -33,6 +41,9 @@ public final class EventReceiver implements Runnable {
 
 	/** Buffer size used for received packet (10MB). **/
 	private static final int BUFFER_SIZE = 10 * 1024 * 1024;
+
+	/** List of markers that are currently active. **/
+	private final List<IMarker> markers;
 
 	/** Server socket which listens for Kite event. **/
 	private final DatagramSocket socket;
@@ -46,13 +57,17 @@ public final class EventReceiver implements Runnable {
 	/** Currently edited document model. **/
 	private IDocument currentDocument;
 
+	/** Currently edited file. **/
+	private IFile currentFile;
+
 	/**
 	 * Default constructor.
 	 * 
 	 * @param socket Server socket that listens for Kite event.
 	 */
 	private EventReceiver(final DatagramSocket socket) {
-		this.socket = socket;		
+		this.socket = socket;
+		this.markers = new ArrayList<IMarker>();
 		this.gson = new Gson();
 	}
 
@@ -167,6 +182,7 @@ public final class EventReceiver implements Runnable {
 				EKitePlugin.log(e);
 			}
 		}
+		clear(null);
 	}
 
 	/**
@@ -176,7 +192,16 @@ public final class EventReceiver implements Runnable {
 	 * @param suggestion Suggestion to apply.
 	 */
 	private void highlight(final Suggestion suggestion) {
-		// TODO implement.
+		for (final Diff diff : suggestion.getDiffs()) {
+			try {
+				final IMarker marker = currentFile.createMarker(MARKER_ID);
+				marker.setAttribute(IMarker.CHAR_START, diff.getBegin());
+				marker.setAttribute(IMarker.CHAR_END, diff.getEnd());
+			}
+			catch (final CoreException e) {
+				EKitePlugin.log(e);
+			}
+		}
 	}
 
 	/**
@@ -186,7 +211,16 @@ public final class EventReceiver implements Runnable {
 	 * @param suggestion Suggestion to apply.
 	 */
 	private void clear(final Suggestion suggestion) {
-		// TODO implement.
+		for (int i = 0; i < markers.size(); i++) {
+			final IMarker marker = markers.get(i);
+			try {
+				marker.delete();
+				markers.remove(i);
+			}
+			catch (final CoreException e) {
+				EKitePlugin.log(e);
+			}
+		}
 	}
 
 	/**
