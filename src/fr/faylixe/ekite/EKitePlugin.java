@@ -56,6 +56,8 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	public void stop(final BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
+		receiver.shutdown();
+		sender.sendLostFocus();
 	}
 
 	/**
@@ -116,6 +118,7 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 		try {
 			this.receiver = EventReceiver.create();
 			this.sender = EventSender.create(receiver);
+			this.receiver.start();
 			this.listener = new PartListener(sender);
 		}
 		catch (final IOException e) {

@@ -8,7 +8,14 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+
 import com.google.gson.Gson;
+
+import fr.faylixe.ekite.EKitePlugin;
+import fr.faylixe.ekite.model.Diff;
+import fr.faylixe.ekite.model.Suggestion;
 
 /**
  * This class is in charge of receiving and handling
@@ -36,6 +43,9 @@ public final class EventReceiver implements Runnable {
 	/** Boolean flag that indicates if the receiver is running or not. **/
 	private volatile boolean running;
 
+	/** Currently edited document model. **/
+	private IDocument currentDocument;
+
 	/**
 	 * Default constructor.
 	 * 
@@ -44,6 +54,15 @@ public final class EventReceiver implements Runnable {
 	private EventReceiver(final DatagramSocket socket) {
 		this.socket = socket;		
 		this.gson = new Gson();
+	}
+
+	/**
+	 * Current document setter.
+	 * 
+	 * @param document Currently edited document.
+	 */
+	protected void setCurrentDocument(final IDocument document) {
+		this.currentDocument = document;
 	}
 
 	/**
@@ -83,20 +102,91 @@ public final class EventReceiver implements Runnable {
 		while (running) {
 			final DatagramPacket packet = new DatagramPacket(buffer, BUFFER_SIZE);
 			try {
+				if (EKitePlugin.DEBUG) {
+					EKitePlugin.log("Waiting for Kite notification");
+				}
 				socket.receive(packet);
+				if (EKitePlugin.DEBUG) {
+					EKitePlugin.log("Received Kite notification : " + packet.getLength());
+				}
 				final InputStream stream = new ByteArrayInputStream(
 						packet.getData(),
 						packet.getOffset(),
 						packet.getLength());
 				try (final InputStreamReader reader = new InputStreamReader(stream)) {
-					gson.fromJson(reader, null);					
+					final Suggestion suggestion = gson.fromJson(reader, Suggestion.class);					
+					if (EKitePlugin.DEBUG) {
+						EKitePlugin.log("Suggestion received");
+					}
+					handleSuggestion(suggestion);
 				}
-				// TODO : Consume suggestion.
 			}
 			catch (final IOException e) {
-				
+				EKitePlugin.log(e);
 			}
 		}
+	}
+
+	/**
+	 * Handles the given <tt>suggestion</tt> regarding
+	 * of it type.
+	 * 
+	 * @param suggestion Suggestion to handle.
+	 */
+	private void handleSuggestion(final Suggestion suggestion) {
+		if (currentDocument == null) {
+			EKitePlugin.log("Suggest to null document");
+			return;
+		}
+		if (suggestion.isApply()) {
+			apply(suggestion);
+		}
+		else if (suggestion.isHighlight()) {
+			highlight(suggestion);
+		}
+		else if (suggestion.isClear()) {
+			clear(suggestion);
+		}
+	}
+
+	/**
+	 * Applies all diffs of the given <tt>suggestion</tt>
+	 * to the currently edited document.
+	 * 
+	 * @param suggestion Suggestion to apply.
+	 */
+	private void apply(final Suggestion suggestion) {
+		for (final Diff diff : suggestion.getDiffs()) {
+			try {
+				if (EKitePlugin.DEBUG) {
+					EKitePlugin.log("Apply diff : " + diff.getDestination());
+				}
+				currentDocument.replace(diff.getBegin(), diff.getLength(), diff.getDestination());
+			}
+			catch (final BadLocationException e) {
+				EKitePlugin.log(e);
+			}
+		}
+	}
+
+	/**
+	 * Highlight all diffs of the given <tt>suggestion</tt>
+	 * to the currently edited document.
+	 * 
+	 * @param suggestion Suggestion to apply.
+	 */
+	private void highlight(final Suggestion suggestion) {
+		// TODO implement.
+	}
+
+	/**
+	 * Clear all hightlight diffs of the given <tt>suggestion</tt>
+	 * to the currently edited document.
+	 * 
+	 * @param suggestion Suggestion to apply.
+	 */
+	private void clear(final Suggestion suggestion) {
+		// TODO implement.
 	}
 
 	/**

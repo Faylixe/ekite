@@ -9,6 +9,7 @@ import org.eclipse.jface.text.IDocument;
 
 import com.google.gson.Gson;
 
+import fr.faylixe.ekite.EKitePlugin;
 import fr.faylixe.ekite.model.ActionEvent.ErrorEvent;
 import fr.faylixe.ekite.model.ActionEvent.FocusEvent;
 import fr.faylixe.ekite.model.ActionEvent.LostFocusEvent;
@@ -43,6 +44,9 @@ public final class EventSender {
 	/** Target socket to send data to. **/
 	private final DatagramSocket socket;
 
+	/** **/
+	private final EventReceiver receiver;
+
 	/** Plugin identifier to use for built event. **/
 	private final String pluginId;
 
@@ -56,11 +60,15 @@ public final class EventSender {
 	 * Default constructor.
 	 * 
 	 * @param socket
-	 * @param pluginId Plugin identifier to use for built event.
+	 * @param receiver
 	 */
-	private EventSender(final DatagramSocket socket, final String pluginId) {
+	private EventSender(final DatagramSocket socket, final EventReceiver receiver) {
 		this.socket = socket;
-		this.pluginId = pluginId;
+		this.receiver = receiver;
+		this.pluginId = receiver.getPluginIdentifier();
+		if (EKitePlugin.DEBUG) {
+			EKitePlugin.log("Plugin identifier : " + pluginId);
+		}
 		this.gson = new Gson();
 	}
 
@@ -80,6 +88,7 @@ public final class EventSender {
 	 */
 	public void setCurrentDocument(final IDocument document) {
 		this.currentDocument = document;
+		receiver.setCurrentDocument(document);
 	}
 
 	/**
@@ -177,7 +186,7 @@ public final class EventSender {
 	 * @param event Event to send.
 	 * @throws IOException If any error occurs while sending the event.
 	 */
-	private void sendEvent(final ActionEvent event) throws IOException {
+	private synchronized void sendEvent(final ActionEvent event) throws IOException {
 		try {
 			final String json = gson.toJson(event);
 			final byte[] bytes = json.getBytes();
@@ -202,7 +211,7 @@ public final class EventSender {
 	public static EventSender create(final EventReceiver receiver) throws IOException {
 		final DatagramSocket socket = new DatagramSocket();
 		socket.setSendBufferSize(BUFFER_SIZE);
-		return new EventSender(socket, receiver.getPluginIdentifier());
+		return new EventSender(socket, receiver);
 	}
 
 }

@@ -1,6 +1,7 @@
 package fr.faylixe.ekite.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
@@ -10,6 +11,15 @@ import com.google.gson.annotations.SerializedName;
  * @author fv
  */
 public final class Suggestion extends BaseEvent {
+
+	/** Apply suggestion type. **/
+	private static final String APPLY = "apply";
+
+	/** Highlight suggestion type. **/
+	private static final String HIGHLIGHT = "highlight";
+
+	/** Clear suggestion type. **/
+	private static final String CLEAR = "clear";
 
 	/** Suggestion type. **/
 	@SerializedName("type")
@@ -64,13 +74,39 @@ public final class Suggestion extends BaseEvent {
 	}
 	
 	/**
-	 * Adds the given <tt>diff</tt> to the diffs list.
+	 * Indicates if this suggestion is an apply one.
 	 * 
-	 * @param diff Diff instance to add.
-	 * @see List#add(Object)
+	 * @return <tt>true</tt> if this suggestion type is apply, <tt>false</tt> otherwise.
 	 */
-	public void addDiff(final Diff diff) {
-		diffs.add(diff);
+	public boolean isApply() {
+		return APPLY.equals(type);
+	}
+	
+	/**
+	 * Indicates if this suggestion is a highlight one.
+	 * 
+	 * @return <tt>true</tt> if this suggestion type is highlight, <tt>false</tt> otherwise.
+	 */
+	public boolean isHighlight() {
+		return HIGHLIGHT.equals(type);
+	}
+
+	/**
+	 * Indicates if this suggestion is a clear one.
+	 * 
+	 * @return <tt>true</tt> if this suggestion type is clear, <tt>false</tt> otherwise.
+	 */
+	public boolean isClear() {
+		return CLEAR.equals(type);
+	}
+
+	/**
+	 * Diffs getter.
+	 * 
+	 * @return Unmodifiable view of the internal diffs list.
+	 */
+	public List<Diff> getDiffs() {
+		return Collections.unmodifiableList(diffs);
 	}
 
 }

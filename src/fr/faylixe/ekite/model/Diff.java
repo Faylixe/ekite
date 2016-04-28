@@ -112,6 +112,15 @@ public final class Diff {
 	}
 	
 	/**
+	 * Length getter.
+	 * 
+	 * @return Offset length.
+	 */
+	public int getLength() {
+		return end - begin;
+	}
+	
+	/**
 	 * Source getter.
 	 * 
 	 * @return Original diff.
