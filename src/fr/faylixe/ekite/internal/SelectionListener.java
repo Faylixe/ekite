@@ -32,7 +32,7 @@ public final class SelectionListener implements ISelectionChangedListener {
 			final ITextSelection textSelection = (ITextSelection) selection;
 			try {
 				sender.sendSelection(
-						"",	 // TODO : send current document content.
+						sender.getCurrentDocument().get(),
 						textSelection.getOffset(),
 						textSelection.getOffset() + textSelection.getLength());
 			}

@@ -5,6 +5,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import org.eclipse.jface.text.IDocument;
+
 import com.google.gson.Gson;
 
 import fr.faylixe.ekite.model.ActionEvent.ErrorEvent;
@@ -45,6 +47,9 @@ public final class EventSender {
 	/** Currently edited file name. **/
 	private String currentFilename;
 
+	/** **/
+	private IDocument currentDocument;
+
 	/**
 	 * Default constructor.
 	 * 
@@ -64,6 +69,22 @@ public final class EventSender {
 	 */
 	public void setCurrentFilename(final String filename) {
 		this.currentFilename = filename;
+	}
+	
+	/**
+	 * 
+	 * @param document
+	 */
+	public void setCurrentDocument(final IDocument document) {
+		this.currentDocument = document;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public IDocument getCurrentDocument() {
+		return currentDocument;
 	}
 
 	/**

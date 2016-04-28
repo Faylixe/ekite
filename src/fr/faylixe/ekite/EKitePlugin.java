@@ -31,7 +31,7 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	private static EKitePlugin plugin;
 
 	/** **/
-	private final PartListener listener;
+	private PartListener listener;
 
 	/** **/
 	private EventReceiver receiver;
@@ -39,19 +39,10 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	/** **/
 	private EventSender sender;
 
-	/**
-	 * Default constructor.
-	 */
-	public EKitePlugin() {
-		this.listener = new PartListener(null);
-	}
-
 	/** {@inheritDoc} **/
 	@Override
 	public void start(final BundleContext context) throws Exception {
 		super.start(context);
-		this.receiver = EventReceiver.create();
-		this.sender = EventSender.create(receiver);
 		plugin = this;
 	}
 
@@ -113,18 +104,36 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 		page.addPartListener(listener);
 	}
 
+	/**
+	 * 
+	 */
+	private void initialize() {
+		try {
+			this.receiver = EventReceiver.create();
+			this.sender = EventSender.create(receiver);
+			this.listener = new PartListener(sender);
+		}
+		catch (final IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	/** {@inheritDoc} **/
 	@Override
 	public void earlyStartup() {
+		initialize();
 		final IWorkbench workbench = PlatformUI.getWorkbench();
 		workbench.addWindowListener(this);
-		workbench.getDisplay().syncExec(() -> {
-			final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-			if (window != null) {
-				window.addPageListener(this);
-				final IWorkbenchPage page = window.getActivePage();
-				if (page != null) {
-					page.addPartListener(listener);
+		workbench.getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+				if (window != null) {
+					window.addPageListener(EKitePlugin.this);
+					final IWorkbenchPage page = window.getActivePage();
+					if (page != null) {
+						page.addPartListener(listener);
+					}
 				}
 			}
 		});

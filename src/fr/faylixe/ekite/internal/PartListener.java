@@ -3,11 +3,13 @@ package fr.faylixe.ekite.internal;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 /**
@@ -20,7 +22,7 @@ public final class PartListener implements IPartListener2 {
 	private final EventSender sender;
 
 	/** **/
-	private SelectionListener currentSelectionListener;
+	private final SelectionListener selectionListener;
 
 	/**
 	 * 
@@ -28,6 +30,7 @@ public final class PartListener implements IPartListener2 {
 	 */
 	public PartListener(final EventSender sender) {
 		this.sender = sender;
+		this.selectionListener = new SelectionListener(sender);
 	}
 
 	/** {@inheritDoc} **/
@@ -88,10 +91,11 @@ public final class PartListener implements IPartListener2 {
 			final ITextEditor editor = (ITextEditor) part;
 			final IEditorInput input = editor.getEditorInput();
 			if (input != null) {
-				configureCurrentFile(input);
-				configureSelectionListener(editor);
-	//			final IDocumentProvider documentProvider = editor.getDocumentProvider();
-	//			final IDocument document = documentProvider.getDocument(editor.getEditorInput());
+				final IDocumentProvider documentProvider = editor.getDocumentProvider();
+				final IDocument document = documentProvider.getDocument(editor.getEditorInput());
+				configureCurrentFile(input, document);
+				final ISelectionProvider selectionProvider = editor.getSelectionProvider();
+				selectionProvider.addSelectionChangedListener(selectionListener);
 	//			document.addDocumentListener(null);
 			}
 		}
@@ -106,16 +110,16 @@ public final class PartListener implements IPartListener2 {
 		if (part != null && part instanceof ITextEditor) {
 			final ITextEditor editor = (ITextEditor) part;
 			final ISelectionProvider selectionProvider = editor.getSelectionProvider();
-			selectionProvider.removeSelectionChangedListener(currentSelectionListener);
-			currentSelectionListener = null;
+			selectionProvider.removeSelectionChangedListener(selectionListener);
 		}
 	}
 
 	/**
 	 * 
 	 * @param input
+	 * @param document
 	 */
-	private void configureCurrentFile(final IEditorInput input) {
+	private void configureCurrentFile(final IEditorInput input, final IDocument document) {
 		final Object adapter = input.getAdapter(IFile.class);
 		if (adapter != null) {
 			final IFile file = (IFile) adapter;
@@ -125,6 +129,7 @@ public final class PartListener implements IPartListener2 {
 					.toFile()
 					.getCanonicalPath();
 				sender.setCurrentFilename(path);
+				sender.setCurrentDocument(document);
 				sender.sendFocus();
 			}
 			catch (final IOException e) {
@@ -134,18 +139,4 @@ public final class PartListener implements IPartListener2 {
 		}
 	}
 
-	/**
-	 * 
-	 * @param editor
-	 * @param event
-	 */
-	private void configureSelectionListener(final ITextEditor editor) {
-		final ISelectionProvider provider = editor.getSelectionProvider();
-		if (currentSelectionListener != null) {
-			provider.removeSelectionChangedListener(currentSelectionListener);
-		}
-		currentSelectionListener = new SelectionListener(sender);
-		provider.addSelectionChangedListener(currentSelectionListener);
-		
-	}
 }
