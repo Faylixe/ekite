@@ -65,13 +65,13 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	/** {@inheritDoc} **/
 	@Override
 	public void windowActivated(final IWorkbenchWindow window) {
-		// Do nothing.
+		window.addPageListener(this);
 	}
 
 	/** {@inheritDoc} **/
 	@Override
 	public void windowDeactivated(final IWorkbenchWindow window) {
-		// Do nothing.
+		window.removePageListener(this);
 	}
 
 	/** {@inheritDoc} **/
@@ -89,7 +89,7 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	/** {@inheritDoc} **/
 	@Override
 	public void pageActivated(final IWorkbenchPage page) {
-		// Do nothing.
+		page.addPartListener(listener);
 	}
 
 	/** {@inheritDoc} **/
@@ -129,9 +129,11 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 			public void run() {
 				final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 				if (window != null) {
+					window.getShell().addFocusListener(EKitePlugin.this);
 					window.addPageListener(EKitePlugin.this);
 					final IWorkbenchPage page = window.getActivePage();
 					if (page != null) {
+						// TODO : Check for restored.
 						page.addPartListener(listener);
 					}
 				}
