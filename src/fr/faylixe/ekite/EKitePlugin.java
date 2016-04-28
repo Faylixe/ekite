@@ -29,16 +29,19 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	/** Plugin id. **/
 	public static final String PLUGIN_ID = "fr.faylixe.ekite"; //$NON-NLS-1$
 
+	/** Boolean flag that indiciates if the debug ode is active or not. **/
+	public static final boolean DEBUG = true;
+
 	/** Plugin instance. **/
 	private static EKitePlugin plugin;
 
-	/** **/
+	/** Part listener instance used. **/
 	private PartListener listener;
 
-	/** **/
+	/** Event receiver for this Eclipse instance. **/
 	private EventReceiver receiver;
 
-	/** **/
+	/** Event sender for this Eclipse instance. **/
 	private EventSender sender;
 
 	/** {@inheritDoc} **/
@@ -107,7 +110,7 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	}
 
 	/**
-	 * 
+	 * Creates all components of this plugins.
 	 */
 	private void initialize() {
 		try {
@@ -166,25 +169,31 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	}
 	
 	/**
+	 * Shortcut for logging the given <tt>message</tt>
+	 * through this plugin logger.
 	 * 
-	 * @param message
+	 * @param message Message to log.
 	 */
 	public static void log(final String message) {
 		log(message, null);
 	}
 
 	/**
+	 * Shortcut for logging the given <tt>exception</tt>
+	 * through this plugin logger.
 	 * 
-	 * @param e
+	 * @param exception Exception to log (could be <tt>null</tt>).
 	 */
-	public static void log(final Throwable e) {
-		log(e.getMessage(), e);
+	public static void log(final Throwable exception) {
+		log(exception.getMessage(), exception);
 	}
 
 	/**
+	 * Shortcut for logging the given <tt>message</tt>
+	 * and <tt>exception</tt> through this plugin logger.
 	 * 
-	 * @param message
-	 * @param exception
+	 * @param message Message to log.
+	 * @param exception Exception to log (could be <tt>null</tt>).
 	 */
 	public static void log(final String message, final Throwable exception) {
 		final Status status;

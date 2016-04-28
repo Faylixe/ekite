@@ -11,32 +11,35 @@ import java.net.InetAddress;
 import com.google.gson.Gson;
 
 /**
+ * This class is in charge of receiving and handling
+ * event notification sent from Kite.
  * 
  * @author fv
  */
 public final class EventReceiver implements Runnable {
 
-	/** **/
+	/** Plugin identifier prefix used. **/
 	private static final String IDENTIFIER_PREFIX = "udp://127.0.0.1:";
 
-	/** **/
+	/** Listened hostname. **/
 	private static final String HOSTNAME = "127.0.0.1";
 
-	/** **/
+	/** Buffer size used for received packet (10MB). **/
 	private static final int BUFFER_SIZE = 10 * 1024 * 1024;
 
-	/** **/
+	/** Server socket which listens for Kite event. **/
 	private final DatagramSocket socket;
 
-	/** **/
+	/** Gson instance for transforming event to JSON. **/
 	private final Gson gson;
 
-	/** **/
+	/** Boolean flag that indicates if the receiver is running or not. **/
 	private volatile boolean running;
 
 	/**
+	 * Default constructor.
 	 * 
-	 * @param socket
+	 * @param socket Server socket that listens for Kite event.
 	 */
 	private EventReceiver(final DatagramSocket socket) {
 		this.socket = socket;		
@@ -44,8 +47,10 @@ public final class EventReceiver implements Runnable {
 	}
 
 	/**
+	 * Builds and returns the plugin identifier
+	 * for the current server socket.
 	 * 
-	 * @return
+	 * @return Built identifier.
 	 */
 	public String getPluginIdentifier() {
 		final StringBuffer buffer = new StringBuffer();
@@ -55,7 +60,7 @@ public final class EventReceiver implements Runnable {
 	}
 
 	/**
-	 * 
+	 * Starts a new Thread over this {@link Runnable}.
 	 */
 	public void start() {
 		final Thread thread = new Thread(this);
@@ -63,7 +68,8 @@ public final class EventReceiver implements Runnable {
 	}
  
 	/**
-	 * 
+	 * Stops the currently running thread
+	 * by setting the running flag to <tt>false</tt>.
 	 */
 	public void shutdown() {
 		running = false;
@@ -94,9 +100,10 @@ public final class EventReceiver implements Runnable {
 	}
 
 	/**
+	 * Creates and returns an {@link EventReceiver} instance.
 	 * 
-	 * @return
-	 * @throws IOException
+	 * @return Created instance.
+	 * @throws IOException If any error occurs while creating associated socket.
 	 */
 	public static final EventReceiver create() throws IOException {
 		final DatagramSocket socket = new DatagramSocket(0, InetAddress.getByName(HOSTNAME));

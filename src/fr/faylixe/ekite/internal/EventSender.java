@@ -18,13 +18,15 @@ import fr.faylixe.ekite.model.ActionEvent;
 import fr.faylixe.ekite.model.Selection;
 
 /**
+ * This class is in charge of dispatching event
+ * to Kite using UDP socket.
  * 
  * @author fv
  */
 public final class EventSender {
 
-	/** **/
-	private static final IllegalStateException NO_CURRENT_FILE = new IllegalStateException("");
+	/** Exception thrown when no file name and document is set. **/
+	private static final IllegalStateException NO_CURRENT_FILE = new IllegalStateException("No current file / document settled.");
 
 	/** Kite server hostname. **/
 	private static final String HOSTNAME = "127.0.0.1";
@@ -47,7 +49,7 @@ public final class EventSender {
 	/** Currently edited file name. **/
 	private String currentFilename;
 
-	/** **/
+	/** Currently edited document model. **/
 	private IDocument currentDocument;
 
 	/**
@@ -72,19 +74,22 @@ public final class EventSender {
 	}
 	
 	/**
+	 * Current document setter.
 	 * 
-	 * @param document
+	 * @param document Currently edited document.
 	 */
 	public void setCurrentDocument(final IDocument document) {
 		this.currentDocument = document;
 	}
 
 	/**
+	 * Sends an <tt>selection</tt> event to Kite.
 	 * 
-	 * @param start
-	 * @param end
-	 * @throws IOException 
-	 * @throws IllegalStateException
+	 * @param start Start position of the current edition.
+	 * @param end End position of the current edition.
+	 * 
+	 * @throws IOException If any error occurs while sending the event.
+	 * @throws IllegalStateException If no current file or current document name is settled.
 	 */
 	public void sendSelection(final int start, final int end) throws IOException {
 		if (currentFilename == null || currentDocument == null) {
@@ -98,11 +103,13 @@ public final class EventSender {
 	}
 
 	/**
+	 * Sends an <tt>edit</tt> event to Kite.
 	 * 
-	 * @param start
-	 * @param end
-	 * @throws IOException 
-	 * @throws IllegalStateException
+	 * @param start Start position of the current edition.
+	 * @param end End position of the current edition.
+	 * 
+	 * @throws IOException If any error occurs while sending the event.
+	 * @throws IllegalStateException If no current file or current document name is settled.
 	 */
 	public void sendEdit(final int start, final int end) throws IOException {
 		if (currentFilename == null || currentDocument == null) {
@@ -116,10 +123,10 @@ public final class EventSender {
 	}
 	
 	/**
+	 * Sends an <tt>error</tt> event to Kite.
 	 * 
-	 * @param text
-	 * @throws IOException 
-	 * @throws IllegalStateException
+	 * @throws IOException If any error occurs while sending the event.
+	 * @throws IllegalStateException If no current file name is settled.
 	 */
 	public void sendError(final String text) throws IOException {
 		if (currentFilename == null) {
@@ -130,22 +137,30 @@ public final class EventSender {
 	}
 
 	/**
+	 * Sends a <tt>focus</tt> event to Kite.
 	 * 
-	 * @throws IOException 
-	 * @throws IllegalStateException
+	 * @throws IOException If any error occurs while sending the event.
+	 * @throws IllegalStateException If no current file name is settled.
 	 */
 	public void sendFocus() throws IOException {
 		if (currentFilename == null) {
 			throw NO_CURRENT_FILE;
 		}
-		final FocusEvent event = new FocusEvent(pluginId, currentFilename);
+		final FocusEvent event;
+		if (currentDocument == null) {
+			event = new FocusEvent(pluginId, currentFilename);
+		}
+		else {
+			event = new FocusEvent(pluginId, currentFilename, currentDocument.get());
+		}
 		sendEvent(event);
 	}
 
 	/**
+	 * Sends a <tt>lost_focus</tt> event to Kite.
 	 * 
-	 * @throws IOException 
-	 * @throws IllegalStateException
+	 * @throws IOException If any error occurs while sending the event.
+	 * @throws IllegalStateException If no current file name is settled.
 	 */
 	public void sendLostFocus() throws IOException {
 		if (currentFilename == null) {
@@ -156,9 +171,11 @@ public final class EventSender {
 	}
 
 	/**
+	 * Sends the given <tt>event</tt> to Kite as
+	 * a JSON blob to the target UDP socket.
 	 * 
-	 * @param json
-	 * @throws IOException
+	 * @param event Event to send.
+	 * @throws IOException If any error occurs while sending the event.
 	 */
 	private void sendEvent(final ActionEvent event) throws IOException {
 		try {
@@ -178,6 +195,7 @@ public final class EventSender {
 	/**
 	 * Creates and returns an {@link EventSender} instance.
 	 * 
+	 * @param receiver Receiver instance this sender will be bound to.
 	 * @return Created instance.
 	 * @throws IOException If any error occurs while creating associated socket.
 	 */

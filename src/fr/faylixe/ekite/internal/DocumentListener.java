@@ -9,13 +9,13 @@ import fr.faylixe.ekite.EKitePlugin;
 
 /**
  * {@link DocumentListener} is in charge of monitoring
- * ``edit`` event and to dispatch them to Kite.
+ * <tt>edit</tt> event and to dispatch them to Kite.
  * Such event are triggered by any change in the
  * listened document.
  * 
  * TODO	Consider using dedicated queue
  * 		for sending event in a separated
- * 		thread in order to avoid blocking
+ * 		thread in order to avoid blocking ?
  * 
  * @author fv
  */
@@ -44,6 +44,10 @@ public final class DocumentListener implements IDocumentListener {
 	public void documentChanged(final DocumentEvent event) {
 		try {
 			sender.sendEdit(event.getOffset(), event.getOffset() + event.getLength());
+			sender.sendSelection(event.getOffset(), event.getOffset() + event.getLength());
+			if (EKitePlugin.DEBUG) {
+				EKitePlugin.log("Edit / Selection for " + event.getOffset() + " to " + event.getLength());
+			}
 		}
 		catch (final IOException | IllegalStateException e) {
 			EKitePlugin.log(e);

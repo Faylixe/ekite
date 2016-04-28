@@ -12,13 +12,13 @@ import com.google.gson.annotations.SerializedName;
  */
 public class NotificationEvent extends ActionEvent {
 
-	/** Name of the ``edit`` action.**/
+	/** Name of the <tt>edit</tt> action.**/
 	private static final String EDIT = "edit";
 
-	/** Name of the ``selection`` action.**/
+	/** Name of the <tt>selection</tt> action.**/
 	private static final String SELECTION = "selection";
 
-	/** Name of the ``skip`` action. **/
+	/** Name of the <tt>skip</tt> action. **/
 	private static final String SKIP = "skip";
 
 	/** Skip action text. **/
@@ -46,7 +46,7 @@ public class NotificationEvent extends ActionEvent {
 	}
 
 	/**
-	 * Adds the given ``selection`` to the selection list.
+	 * Adds the given <tt>selection</tt> to the selection list.
 	 * 
 	 * @param selection Selection to add.
 	 * @see List#add(Object)
@@ -55,7 +55,7 @@ public class NotificationEvent extends ActionEvent {
 		selections.add(selection);
 	}
 
-	/** Shortcut for the ``edit`` action. **/
+	/** Shortcut for the <tt>edit</tt> action. **/
 	public static final class EditEvent extends NotificationEvent {	
 		
 		/**
@@ -74,7 +74,7 @@ public class NotificationEvent extends ActionEvent {
 	
 	}
 	
-	/** Shortcut for the ``selection`` action. **/
+	/** Shortcut for the <tt>selection</tt> action. **/
 	public static final class SelectionEvent extends NotificationEvent {	
 		
 		/**
@@ -93,7 +93,7 @@ public class NotificationEvent extends ActionEvent {
 	
 	}
 
-	/** Shortcut for the ``skip`` action. **/
+	/** Shortcut for the <tt>skip</tt> action. **/
 	public static final class SkipEvent extends NotificationEvent {	
 		
 		/**

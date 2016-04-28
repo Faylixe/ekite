@@ -9,13 +9,13 @@ import com.google.gson.annotations.SerializedName;
  */
 public class ActionEvent extends BaseEvent {
 
-	/** Name of the ``focus`` action.**/
+	/** Name of the <tt>focus</tt> action.**/
 	private static final String FOCUS = "focus";
 	
-	/** Name of the ``lost_focus`` action.**/
+	/** Name of the <tt>lost_focus</tt> action.**/
 	private static final String LOST_FOCUS = "lost_focus";
 
-	/** Name of the ``error`` action.**/
+	/** Name of the <tt>error</tt> action.**/
 	private static final String ERROR = "error";
 		
 	/** Source editor that trigger this event. **/
@@ -49,7 +49,7 @@ public class ActionEvent extends BaseEvent {
 		this.text = text;
 	}
 
-	/** Shortcut for the ``focus`` action. **/
+	/** Shortcut for the <tt>focus</tt> action. **/
 	public static final class FocusEvent extends ActionEvent {	
 		
 		/**
@@ -63,10 +63,24 @@ public class ActionEvent extends BaseEvent {
 				final String filename) {
 			super(pluginId, filename, FOCUS, FOCUS);
 		}
+		
+		/**
+		 * Default constructor. 
+		 * 
+		 * @param pluginId Plugin identifier that send this event.
+		 * @param filename Name of the currently edited file.
+		 * @param text Buffer content of the currently edited file.
+		 */
+		public FocusEvent(
+				final String pluginId,
+				final String filename,
+				final String text) {
+			super(pluginId, filename, FOCUS, text);
+		}
 	
 	}
 
-	/** Shortcut for the ``lost_focus`` action. **/
+	/** Shortcut for the <tt>lost_focus</tt> action. **/
 	public static final class LostFocusEvent extends NotificationEvent {	
 		
 		/**
@@ -83,7 +97,7 @@ public class ActionEvent extends BaseEvent {
 	
 	}
 
-	/** Shortcut for the ``error`` action. **/
+	/** Shortcut for the <tt>error</tt> action. **/
 	public static final class ErrorEvent extends NotificationEvent {	
 		
 		/**

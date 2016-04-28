@@ -13,7 +13,7 @@ import fr.faylixe.ekite.EKitePlugin;
 
 /**
  * {@link SelectionListener} is in charge of monitoring
- * ``selection`` event and to dispatch them to Kite.
+ * <tt>selection</tt> event and to dispatch them to Kite.
  * Such event are triggered by a cursor move, or user selection.
  * 
  * TODO	Consider using dedicated queue
@@ -46,6 +46,13 @@ public final class SelectionListener implements ISelectionChangedListener, Caret
 				sender.sendSelection(
 						textSelection.getOffset(),
 						textSelection.getOffset() + textSelection.getLength());
+				if (EKitePlugin.DEBUG) {
+					EKitePlugin.log(
+							"Selection changed "
+							+ textSelection.getOffset()
+							+ " - "
+							+ textSelection.getLength());
+				}
 			}
 			catch (final IOException | IllegalStateException e) {
 				EKitePlugin.log(e);
@@ -58,7 +65,9 @@ public final class SelectionListener implements ISelectionChangedListener, Caret
 	public void caretMoved(final CaretEvent event) {
 		try {
 			sender.sendSelection(event.caretOffset, event.caretOffset);
-			EKitePlugin.log("Caret moved to " + event.caretOffset);
+			if (EKitePlugin.DEBUG) {
+				EKitePlugin.log("Caret moved to " + event.caretOffset);
+			}
 		}
 		catch (final IOException | IllegalStateException e) {
 			EKitePlugin.log(e);

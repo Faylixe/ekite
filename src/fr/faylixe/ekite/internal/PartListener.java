@@ -18,23 +18,26 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import fr.faylixe.ekite.EKitePlugin;
 
 /**
+ * This listener registers {@link DocumentListener} and {@link SelectionListener}
+ * for text editor that are notified.
  * 
  * @author fv
  */
 public final class PartListener implements IPartListener2 {
 
-	/** **/
+	/** Event sender used by this listener to send event notification. **/
 	private final EventSender sender;
 	
-	/** **/
+	/** Document listener instance to use for registered editor. **/
 	private final DocumentListener documentListener;
 
-	/** **/
+	/** Selection listener instance to use for registered editor. **/
 	private final SelectionListener selectionListener;
 
 	/**
+	 * Default constructor.
 	 * 
-	 * @param sender
+	 * @param sender Event sender instance to use.
 	 */
 	public PartListener(final EventSender sender) {
 		this.sender = sender;
@@ -57,7 +60,7 @@ public final class PartListener implements IPartListener2 {
 	/** {@inheritDoc} **/
 	@Override
 	public void partClosed(final IWorkbenchPartReference partRef) {
-		unconfigure(partRef);
+		// Do nothing.
 	}
 
 	/** {@inheritDoc} **/
@@ -69,19 +72,19 @@ public final class PartListener implements IPartListener2 {
 	/** {@inheritDoc} **/
 	@Override
 	public void partOpened(final IWorkbenchPartReference partRef) {
-		configure(partRef);
+		// Do nothing.
 	}
 
 	/** {@inheritDoc} **/
 	@Override
 	public void partHidden(final IWorkbenchPartReference partRef) {
-		unconfigure(partRef);
+		// Do nothing.
 	}
 
 	/** {@inheritDoc} **/
 	@Override
 	public void partVisible(final IWorkbenchPartReference partRef) {
-		configure(partRef);
+		// Do nothing.
 	}
 
 	/** {@inheritDoc} **/
@@ -91,8 +94,10 @@ public final class PartListener implements IPartListener2 {
 	}
 
 	/**
+	 * Adds listeners to the editor denoted by the 
+	 * given <tt>partRef</tt>.
 	 * 
-	 * @param partRef
+	 * @param partRef Editor reference to register listener to.
 	 */
 	private void configure(final IWorkbenchPartReference partRef) {
 		final IWorkbenchPart part = partRef.getPart(false);
@@ -115,8 +120,10 @@ public final class PartListener implements IPartListener2 {
 	}
 	
 	/**
+	 * Removes all previously registered listeners for the target
+	 * document of the given <tt>partRef</tt>.
 	 * 
-	 * @param partRef
+	 * @param partRef Editor reference to unregister listener of.
 	 */
 	private void unconfigure(final IWorkbenchPartReference partRef) {
 		final IWorkbenchPart part = partRef.getPart(false);
@@ -135,9 +142,11 @@ public final class PartListener implements IPartListener2 {
 	}
 
 	/**
+	 * Retrieves a {@link StyledText} components
+	 * from the given <tt>editor</tt>.
 	 * 
-	 * @param editor
-	 * @return
+	 * @param editor Editor to retrieve styled text from.
+	 * @return Found instance if any, <tt>null</tt> otherwise.
 	 */
 	private StyledText getStyledText(final ITextEditor editor) {
 		if (editor instanceof AbstractTextEditor) {
@@ -151,9 +160,11 @@ public final class PartListener implements IPartListener2 {
 	}
 	
 	/**
+	 * Configures the event sender using the
+	 * currently edited file.
 	 * 
-	 * @param input
-	 * @param document
+	 * @param input Current editor input.
+	 * @param document Current associated {@link IDocument} instance.
 	 */
 	private void configureCurrentFile(final IEditorInput input, final IDocument document) {
 		final Object adapter = input.getAdapter(IFile.class);
@@ -164,7 +175,9 @@ public final class PartListener implements IPartListener2 {
 					.getRawLocation()
 					.toFile()
 					.getCanonicalPath();
-				EKitePlugin.log("Focus on document : " + path);
+				if (EKitePlugin.DEBUG) {
+					EKitePlugin.log("Focus on document : " + path);
+				}
 				sender.setCurrentFilename(path);
 				sender.setCurrentDocument(document);
 				sender.sendFocus();

@@ -64,7 +64,7 @@ public final class Suggestion extends BaseEvent {
 	}
 	
 	/**
-	 * Adds the given ``diff``to the diffs list.
+	 * Adds the given <tt>diff</tt> to the diffs list.
 	 * 
 	 * @param diff Diff instance to add.
 	 * @see List#add(Object)
