@@ -7,28 +7,26 @@
             class="fr.faylixe.ekite.EKitePlugin">
       </startup>
    </extension>
-   <extension
-         point="org.eclipse.core.resources.markers"
-         id="fr.faylixe.ekite.marker"
-         name="kite">
-         <super type="org.eclipse.core.resources.markers"/>
-         <persistent value="true"/>
-   </extension>
-   <extension
-   		 point="org.eclipse.ui.editors.annotationTypes">
-		 <type
-		 	super="org.eclipse.ui.editors.texteditor.warning"
-		 	markerType="fr.faylixe.ekite.marker"
-		 	name="fr.faylixe.ekite.annotation"
-		 	markerSeverity="1" />
-   </extension>
-   <extension
-         point="org.eclipse.ui.editors.markerAnnotationSpecification">
-         <specification
-         	annotationType="fr.faylixe.ekite.annotation"
-         	icon="icons/kite.png"
-         	verticalRulerPreferenceKey="ekiteIndicationInVerticalRuler"
-         	verticalRulerPreferenceValue="true"/>
-   </extension>
+	<extension
+		point="org.eclipse.core.resources.markers"   
+        id="fr.faylixe.ekite.marker">
+     	<super type="org.eclipse.core.resources.textmarker"/>         
+     	<persistent value="true"/>
+	</extension>
 
+	<extension point="org.eclipse.ui.editors.annotationTypes">
+		<type
+			super="org.eclipse.ui.workbench.texteditor.info"
+			markerType="fr.faylixe.ekite.marker"
+			name="fr.faylixe.ekite.kiteAnnotation"
+			markerSeverity="0"/>
+	</extension>
+
+	  <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+	     <specification
+	        annotationType="fr.faylixe.ekite.kiteAnnotation"
+	        icon="icons/kite.png"
+	        verticalRulerPreferenceKey="kiteMarkerIndicationInVerticalRuler"
+	        verticalRulerPreferenceValue="true"/>
+	  </extension>
 </plugin>

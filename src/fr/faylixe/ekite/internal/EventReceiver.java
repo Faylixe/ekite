@@ -7,19 +7,14 @@ import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.widgets.Display;
 
 import com.google.gson.Gson;
 
 import fr.faylixe.ekite.EKitePlugin;
-import fr.faylixe.ekite.model.Diff;
 import fr.faylixe.ekite.model.Suggestion;
 
 /**
@@ -30,9 +25,6 @@ import fr.faylixe.ekite.model.Suggestion;
  */
 public final class EventReceiver implements Runnable {
 
-	/** Custom marker id. **/
-	private static final String MARKER_ID = "fr.faylixe.ekite.marker";
-
 	/** Plugin identifier prefix used. **/
 	private static final String IDENTIFIER_PREFIX = "udp://127.0.0.1:";
 
@@ -42,8 +34,8 @@ public final class EventReceiver implements Runnable {
 	/** Buffer size used for received packet (10MB). **/
 	private static final int BUFFER_SIZE = 10 * 1024 * 1024;
 
-	/** List of markers that are currently active. **/
-	private final List<IMarker> markers;
+	/** Consumer that processes received suggestion. **/
+	private final SuggestionConsumer consumer;
 
 	/** Server socket which listens for Kite event. **/
 	private final DatagramSocket socket;
@@ -54,21 +46,25 @@ public final class EventReceiver implements Runnable {
 	/** Boolean flag that indicates if the receiver is running or not. **/
 	private volatile boolean running;
 
-	/** Currently edited document model. **/
-	private IDocument currentDocument;
-
-	/** Currently edited file. **/
-	private IFile currentFile;
-
 	/**
 	 * Default constructor.
 	 * 
 	 * @param socket Server socket that listens for Kite event.
+	 * @param display Display instance to use for live operation.
 	 */
-	private EventReceiver(final DatagramSocket socket) {
+	private EventReceiver(final DatagramSocket socket, final Display display) {
 		this.socket = socket;
-		this.markers = new ArrayList<IMarker>();
 		this.gson = new Gson();
+		this.consumer = new SuggestionConsumer(display);
+	}
+
+	/**
+	 * Current file setter.
+	 * 
+	 * @param file Current file to set.
+	 */
+	protected void setCurrentFile(final IFile file) {
+		consumer.setCurrentFile(file);
 	}
 
 	/**
@@ -77,7 +73,7 @@ public final class EventReceiver implements Runnable {
 	 * @param document Currently edited document.
 	 */
 	protected void setCurrentDocument(final IDocument document) {
-		this.currentDocument = document;
+		consumer.setCurrentDocument(document);
 	}
 
 	/**
@@ -97,6 +93,7 @@ public final class EventReceiver implements Runnable {
 	 * Starts a new Thread over this {@link Runnable}.
 	 */
 	public void start() {
+		consumer.start();
 		final Thread thread = new Thread(this);
 		thread.start();
 	}
@@ -107,6 +104,8 @@ public final class EventReceiver implements Runnable {
 	 */
 	public void shutdown() {
 		running = false;
+		socket.close();
+		consumer.shutdown();
 	}
 
 	/** {@inheritDoc} **/
@@ -129,11 +128,11 @@ public final class EventReceiver implements Runnable {
 						packet.getOffset(),
 						packet.getLength());
 				try (final InputStreamReader reader = new InputStreamReader(stream)) {
-					final Suggestion suggestion = gson.fromJson(reader, Suggestion.class);					
+					final Suggestion suggestion = gson.fromJson(reader, Suggestion.class);
 					if (EKitePlugin.DEBUG) {
-						EKitePlugin.log("Suggestion received");
+						EKitePlugin.log("Suggestion received : " + gson.toJson(suggestion));
 					}
-					handleSuggestion(suggestion);
+					consumer.accept(suggestion);
 				}
 			}
 			catch (final IOException e) {
@@ -143,95 +142,15 @@ public final class EventReceiver implements Runnable {
 	}
 
 	/**
-	 * Handles the given <tt>suggestion</tt> regarding
-	 * of it type.
-	 * 
-	 * @param suggestion Suggestion to handle.
-	 */
-	private void handleSuggestion(final Suggestion suggestion) {
-		if (currentDocument == null) {
-			EKitePlugin.log("Suggest to null document");
-			return;
-		}
-		if (suggestion.isApply()) {
-			apply(suggestion);
-		}
-		else if (suggestion.isHighlight()) {
-			highlight(suggestion);
-		}
-		else if (suggestion.isClear()) {
-			clear(suggestion);
-		}
-	}
-
-	/**
-	 * Applies all diffs of the given <tt>suggestion</tt>
-	 * to the currently edited document.
-	 * 
-	 * @param suggestion Suggestion to apply.
-	 */
-	private void apply(final Suggestion suggestion) {
-		for (final Diff diff : suggestion.getDiffs()) {
-			try {
-				if (EKitePlugin.DEBUG) {
-					EKitePlugin.log("Apply diff : " + diff.getDestination());
-				}
-				currentDocument.replace(diff.getBegin(), diff.getLength(), diff.getDestination());
-			}
-			catch (final BadLocationException e) {
-				EKitePlugin.log(e);
-			}
-		}
-		clear(null);
-	}
-
-	/**
-	 * Highlight all diffs of the given <tt>suggestion</tt>
-	 * to the currently edited document.
-	 * 
-	 * @param suggestion Suggestion to apply.
-	 */
-	private void highlight(final Suggestion suggestion) {
-		for (final Diff diff : suggestion.getDiffs()) {
-			try {
-				final IMarker marker = currentFile.createMarker(MARKER_ID);
-				marker.setAttribute(IMarker.CHAR_START, diff.getBegin());
-				marker.setAttribute(IMarker.CHAR_END, diff.getEnd());
-			}
-			catch (final CoreException e) {
-				EKitePlugin.log(e);
-			}
-		}
-	}
-
-	/**
-	 * Clear all hightlight diffs of the given <tt>suggestion</tt>
-	 * to the currently edited document.
-	 * 
-	 * @param suggestion Suggestion to apply.
-	 */
-	private void clear(final Suggestion suggestion) {
-		for (int i = 0; i < markers.size(); i++) {
-			final IMarker marker = markers.get(i);
-			try {
-				marker.delete();
-				markers.remove(i);
-			}
-			catch (final CoreException e) {
-				EKitePlugin.log(e);
-			}
-		}
-	}
-
-	/**
 	 * Creates and returns an {@link EventReceiver} instance.
 	 * 
+	 * @param display Display instance to use for live operation.
 	 * @return Created instance.
 	 * @throws IOException If any error occurs while creating associated socket.
 	 */
-	public static final EventReceiver create() throws IOException {
+	public static final EventReceiver create(final Display display) throws IOException {
 		final DatagramSocket socket = new DatagramSocket(0, InetAddress.getByName(HOSTNAME));
-		return new EventReceiver(socket);
+		return new EventReceiver(socket, display);
 	}
 
 }

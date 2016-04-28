@@ -178,8 +178,9 @@ public final class PartListener implements IPartListener2 {
 				if (EKitePlugin.DEBUG) {
 					EKitePlugin.log("Focus on document : " + path);
 				}
-				sender.setCurrentFilename(path);
+				sender.setCurrentFile(file); // TODO : Consider merging with filename extraction.
 				sender.setCurrentDocument(document);
+				sender.setCurrentFilename(path);
 				sender.sendFocus();
 			}
 			catch (final IOException | IllegalStateException e) {

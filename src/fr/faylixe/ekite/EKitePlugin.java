@@ -7,6 +7,7 @@ import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IPageListener;
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.IWindowListener;
@@ -54,10 +55,11 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	/** {@inheritDoc} **/
 	@Override
 	public void stop(final BundleContext context) throws Exception {
+		log("Receiver : " + receiver);
+		this.receiver.shutdown();
+		this.sender.sendLostFocus();
 		plugin = null;
 		super.stop(context);
-		receiver.shutdown();
-		sender.sendLostFocus();
 	}
 
 	/**
@@ -113,10 +115,12 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 
 	/**
 	 * Creates all components of this plugins.
+	 * 
+	 * @param display Display instance to use for live operation.
 	 */
-	private void initialize() {
+	private void initialize(final Display display) {
 		try {
-			this.receiver = EventReceiver.create();
+			this.receiver = EventReceiver.create(display);
 			this.sender = EventSender.create(receiver);
 			this.receiver.start();
 			this.listener = new PartListener(sender);
@@ -129,8 +133,8 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	/** {@inheritDoc} **/
 	@Override
 	public void earlyStartup() {
-		initialize();
 		final IWorkbench workbench = PlatformUI.getWorkbench();
+		initialize(workbench.getDisplay());
 		workbench.addWindowListener(this);
 		workbench.getDisplay().syncExec(new Runnable() {
 			@Override

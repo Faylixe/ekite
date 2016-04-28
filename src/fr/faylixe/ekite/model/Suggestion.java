@@ -10,7 +10,7 @@ import com.google.gson.annotations.SerializedName;
  * 
  * @author fv
  */
-public final class Suggestion extends BaseEvent {
+public final class Suggestion {
 
 	/** Apply suggestion type. **/
 	private static final String APPLY = "apply";
@@ -20,6 +20,14 @@ public final class Suggestion extends BaseEvent {
 
 	/** Clear suggestion type. **/
 	private static final String CLEAR = "clear";
+
+	/** Plugin identifier that send this event. **/
+	@SerializedName("plugin_id")
+	private final String pluginId;
+
+	/** Name of the currently edited file. **/
+	@SerializedName("filename")
+	private final String filename;
 
 	/** Suggestion type. **/
 	@SerializedName("type")
@@ -65,7 +73,8 @@ public final class Suggestion extends BaseEvent {
 			final double score,
 			final String md5,
 			final String base64) {
-		super(pluginId, filename);
+		this.pluginId = pluginId;
+		this.filename = filename;
 		this.type = type;
 		this.score = score;
 		this.md5 = md5;

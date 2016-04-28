@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 
 import com.google.gson.Gson;
@@ -79,6 +80,15 @@ public final class EventSender {
 	 */
 	public void setCurrentFilename(final String filename) {
 		this.currentFilename = filename;
+	}
+	
+	/**
+	 * Current file setter.
+	 * 
+	 * @param file Currently edited file.
+	 */
+	public void setCurrentFile(final IFile file) {
+		receiver.setCurrentFile(file);
 	}
 	
 	/**
@@ -189,6 +199,9 @@ public final class EventSender {
 	private synchronized void sendEvent(final ActionEvent event) throws IOException {
 		try {
 			final String json = gson.toJson(event);
+			if (EKitePlugin.DEBUG) {
+				EKitePlugin.log("Sending event : " + json);
+			}
 			final byte[] bytes = json.getBytes();
 			final DatagramPacket packet = new DatagramPacket(bytes,
 					bytes.length,

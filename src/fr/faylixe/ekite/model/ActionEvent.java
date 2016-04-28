@@ -7,7 +7,7 @@ import com.google.gson.annotations.SerializedName;
  * 
  * @author fv
  */
-public class ActionEvent extends BaseEvent {
+public class ActionEvent {
 
 	/** Name of the <tt>focus</tt> action.**/
 	private static final String FOCUS = "focus";
@@ -17,7 +17,15 @@ public class ActionEvent extends BaseEvent {
 
 	/** Name of the <tt>error</tt> action.**/
 	private static final String ERROR = "error";
-		
+
+	/** Plugin identifier that send this event. **/
+	@SerializedName("pluginId")
+	private final String pluginId;
+
+	/** Name of the currently edited file. **/
+	@SerializedName("filename")
+	private final String filename;
+
 	/** Source editor that trigger this event. **/
 	@SerializedName("source")
 	private final String source;
@@ -43,7 +51,8 @@ public class ActionEvent extends BaseEvent {
 			final String filename,
 			final String action,
 			final String text) {
-		super(pluginId, filename);
+		this.pluginId = pluginId;
+		this.filename = filename;
 		this.source = "eclipse"; // TODO : Externalize.
 		this.action = action;
 		this.text = text;
