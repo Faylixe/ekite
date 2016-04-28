@@ -5,10 +5,13 @@ import java.io.IOException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -22,23 +25,27 @@ public final class PartListener implements IPartListener2 {
 
 	/** **/
 	private final EventSender sender;
+	
+	/** **/
+	private final DocumentListener documentListener;
 
 	/** **/
 	private final SelectionListener selectionListener;
 
 	/**
 	 * 
-	 * @param source
+	 * @param sender
 	 */
 	public PartListener(final EventSender sender) {
 		this.sender = sender;
+		this.documentListener = new DocumentListener(sender);
 		this.selectionListener = new SelectionListener(sender);
 	}
 
 	/** {@inheritDoc} **/
 	@Override
 	public void partActivated(final IWorkbenchPartReference partRef) {
-		// Do nothing.
+		configure(partRef);
 	}
 
 	/** {@inheritDoc} **/
@@ -91,14 +98,18 @@ public final class PartListener implements IPartListener2 {
 		final IWorkbenchPart part = partRef.getPart(false);
 		if (part != null && part instanceof ITextEditor) {
 			final ITextEditor editor = (ITextEditor) part;
+			final ISelectionProvider selectionProvider = editor.getSelectionProvider();
+			final IDocumentProvider documentProvider = editor.getDocumentProvider();
+			final IDocument document = documentProvider.getDocument(editor.getEditorInput());
 			final IEditorInput input = editor.getEditorInput();
 			if (input != null) {
-				final IDocumentProvider documentProvider = editor.getDocumentProvider();
-				final IDocument document = documentProvider.getDocument(editor.getEditorInput());
 				configureCurrentFile(input, document);
-				final ISelectionProvider selectionProvider = editor.getSelectionProvider();
-				selectionProvider.addSelectionChangedListener(selectionListener);
-	//			document.addDocumentListener(null);
+			}
+			selectionProvider.addSelectionChangedListener(selectionListener);
+			document.addDocumentListener(documentListener);
+			final StyledText styledText = getStyledText(editor);
+			if (styledText != null) {
+				styledText.addCaretListener(selectionListener);
 			}
 		}
 	}
@@ -112,10 +123,33 @@ public final class PartListener implements IPartListener2 {
 		if (part != null && part instanceof ITextEditor) {
 			final ITextEditor editor = (ITextEditor) part;
 			final ISelectionProvider selectionProvider = editor.getSelectionProvider();
+			final IDocumentProvider documentProvider = editor.getDocumentProvider();
+			final IDocument document = documentProvider.getDocument(editor.getEditorInput());
 			selectionProvider.removeSelectionChangedListener(selectionListener);
+			document.removeDocumentListener(documentListener);
+			final StyledText styledText = getStyledText(editor);
+			if (styledText != null) {
+				styledText.removeCaretListener(selectionListener);
+			}
 		}
 	}
 
+	/**
+	 * 
+	 * @param editor
+	 * @return
+	 */
+	private StyledText getStyledText(final ITextEditor editor) {
+		if (editor instanceof AbstractTextEditor) {
+			final AbstractTextEditor textEditor = (AbstractTextEditor) editor;
+			final Object adapter = textEditor.getAdapter(Control.class);
+			if (adapter != null && adapter instanceof StyledText) {
+				return (StyledText) adapter;
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * 
 	 * @param input
@@ -130,6 +164,7 @@ public final class PartListener implements IPartListener2 {
 					.getRawLocation()
 					.toFile()
 					.getCanonicalPath();
+				EKitePlugin.log("Focus on document : " + path);
 				sender.setCurrentFilename(path);
 				sender.setCurrentDocument(document);
 				sender.sendFocus();

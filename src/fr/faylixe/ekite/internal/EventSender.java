@@ -24,7 +24,7 @@ import fr.faylixe.ekite.model.Selection;
 public final class EventSender {
 
 	/** **/
-	private static final IllegalStateException CURRENT_FILE_NOT_VALID = new IllegalStateException("");
+	private static final IllegalStateException NO_CURRENT_FILE = new IllegalStateException("");
 
 	/** Kite server hostname. **/
 	private static final String HOSTNAME = "127.0.0.1";
@@ -81,24 +81,16 @@ public final class EventSender {
 
 	/**
 	 * 
-	 * @return
-	 */
-	public IDocument getCurrentDocument() {
-		return currentDocument;
-	}
-
-	/**
-	 * 
-	 * @param text
 	 * @param start
 	 * @param end
 	 * @throws IOException 
 	 * @throws IllegalStateException
 	 */
-	public void sendSelection(final String text, final int start, final int end) throws IOException {
-		if (currentFilename == null) {
-			throw CURRENT_FILE_NOT_VALID;
+	public void sendSelection(final int start, final int end) throws IOException {
+		if (currentFilename == null || currentDocument == null) {
+			throw NO_CURRENT_FILE;
 		}
+		final String text = currentDocument.get();
 		final SelectionEvent event = new SelectionEvent(pluginId, currentFilename, text);
 		final Selection selection = new Selection(start, end);
 		event.addSelection(selection);
@@ -107,16 +99,16 @@ public final class EventSender {
 
 	/**
 	 * 
-	 * @param text
 	 * @param start
 	 * @param end
 	 * @throws IOException 
 	 * @throws IllegalStateException
 	 */
-	public void sendEdit(final String text, final int start, final int end) throws IOException {
-		if (currentFilename == null) {
-			throw CURRENT_FILE_NOT_VALID;
+	public void sendEdit(final int start, final int end) throws IOException {
+		if (currentFilename == null || currentDocument == null) {
+			throw NO_CURRENT_FILE;
 		}
+		final String text = currentDocument.get();
 		final EditEvent event = new EditEvent(pluginId, currentFilename, text);
 		final Selection selection = new Selection(start, end);
 		event.addSelection(selection);
@@ -131,7 +123,7 @@ public final class EventSender {
 	 */
 	public void sendError(final String text) throws IOException {
 		if (currentFilename == null) {
-			throw CURRENT_FILE_NOT_VALID;
+			throw NO_CURRENT_FILE;
 		}
 		final ErrorEvent event = new ErrorEvent(pluginId, currentFilename, text);
 		sendEvent(event);
@@ -144,7 +136,7 @@ public final class EventSender {
 	 */
 	public void sendFocus() throws IOException {
 		if (currentFilename == null) {
-			throw CURRENT_FILE_NOT_VALID;
+			throw NO_CURRENT_FILE;
 		}
 		final FocusEvent event = new FocusEvent(pluginId, currentFilename);
 		sendEvent(event);
@@ -157,7 +149,7 @@ public final class EventSender {
 	 */
 	public void sendLostFocus() throws IOException {
 		if (currentFilename == null) {
-			throw CURRENT_FILE_NOT_VALID;
+			throw NO_CURRENT_FILE;
 		}
 		final LostFocusEvent event = new LostFocusEvent(pluginId, currentFilename);
 		sendEvent(event);
