@@ -7,6 +7,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 
+import fr.faylixe.ekite.EKitePlugin;
+
 /**
  * 
  * @author fv
@@ -36,8 +38,8 @@ public final class SelectionListener implements ISelectionChangedListener {
 						textSelection.getOffset(),
 						textSelection.getOffset() + textSelection.getLength());
 			}
-			catch (final IOException e) {
-				e.printStackTrace();
+			catch (final IOException | IllegalStateException e) {
+				EKitePlugin.log(e);
 			}
 		}
 	}

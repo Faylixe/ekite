@@ -12,6 +12,8 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import fr.faylixe.ekite.EKitePlugin;
+
 /**
  * 
  * @author fv
@@ -132,9 +134,8 @@ public final class PartListener implements IPartListener2 {
 				sender.setCurrentDocument(document);
 				sender.sendFocus();
 			}
-			catch (final IOException e) {
-				// TODO : Handle error properly.
-				e.printStackTrace();
+			catch (final IOException | IllegalStateException e) {
+				EKitePlugin.log(e);
 			}
 		}
 	}

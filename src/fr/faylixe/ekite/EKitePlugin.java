@@ -3,6 +3,8 @@ package fr.faylixe.ekite;
 
 import java.io.IOException;
 
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.ui.IPageListener;
@@ -114,7 +116,7 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 			this.listener = new PartListener(sender);
 		}
 		catch (final IOException e) {
-			e.printStackTrace();
+			log("An error occurs while initializes Kite support", e);
 		}
 	}
 
@@ -148,8 +150,7 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 			sender.sendFocus();
 		}
 		catch (final IOException e) {
-			// TODO : Handle error.
-			e.printStackTrace();
+			log(e);
 		}
 	}
 
@@ -160,9 +161,41 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 			sender.sendLostFocus();
 		}
 		catch (final IOException e) {
-			// TODO : Handle error.
-			e.printStackTrace();
+			log(e);
 		}
+	}
+	
+	/**
+	 * 
+	 * @param message
+	 */
+	public static void log(final String message) {
+		log(message, null);
+	}
+
+	/**
+	 * 
+	 * @param e
+	 */
+	public static void log(final Throwable e) {
+		log(e.getMessage(), e);
+	}
+
+	/**
+	 * 
+	 * @param message
+	 * @param exception
+	 */
+	public static void log(final String message, final Throwable exception) {
+		final Status status;
+		if (exception == null) {
+			status = new Status(Status.INFO, PLUGIN_ID, message);
+		}
+		else {
+			status = new Status(Status.ERROR, PLUGIN_ID, message, exception);			
+		}
+		final ILog logger = getDefault().getLog();
+		logger.log(status);
 	}
 
 }
