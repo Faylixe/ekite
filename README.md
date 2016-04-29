@@ -8,7 +8,7 @@ In order to install **eKite** you can use the dedicated update site, by clicking
 
 <img src="http://faylixe.fr/ekite/images/installation_1.png" width="400" alt="add update site" />
 
-The update site URL is http://faylixe.fr/ekite/update
+> The update site URL is http://faylixe.fr/ekite/update
 
 Once added you just have to select **eKite** plugin and to follow instruction.
 
