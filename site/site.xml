@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/fr.faylixe.ekite.feature_1.0.0.201604291243.jar" id="fr.faylixe.ekite.feature" version="1.0.0.201604291243">
+      <category name="eKite"/>
+   </feature>
+   <category-def name="eKite" label="eKite">
+      <description>
+         eKite plugin provide Kite programming co-pilot to Eclipse text edtiors.
+      </description>
+   </category-def>
+</site>

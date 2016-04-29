@@ -1,2 +1,6 @@
 /target/
 /bin/
+/site/plugins
+/site/features
+/site/artifacts.jar
+/site/content.jar

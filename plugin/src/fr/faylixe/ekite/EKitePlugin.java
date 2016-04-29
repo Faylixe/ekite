@@ -36,7 +36,7 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	public static final String PLUGIN_ID = "fr.faylixe.ekite"; //$NON-NLS-1$
 
 	/** Boolean flag that indiciates if the debug ode is active or not. **/
-	public static final boolean DEBUG = true; //Boolean.valueOf(System.getProperty("fr.faylixe.ekite.debug"));
+	public static final boolean DEBUG = Boolean.valueOf(System.getProperty("fr.faylixe.ekite.debug"));
 
 	/** Error title for eKite error dialog. **/
 	private static final String ERROR_TITLE = "eKite error";
