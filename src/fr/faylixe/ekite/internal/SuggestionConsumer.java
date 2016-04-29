@@ -28,6 +28,9 @@ public final class SuggestionConsumer implements Runnable {
 
 	/** Custom marker id. **/
 	private static final String MARKER_ID = "fr.faylixe.ekite.marker";
+	
+	/** 2 seconds delay between empty processing. **/
+	private static final long TIMEOUT = 5000;
 
 	/** Default capacity for the queue. **/
 	private static final int QUEUE_CAPACITY = 100;
@@ -40,6 +43,9 @@ public final class SuggestionConsumer implements Runnable {
 
 	/** Display instance to use for live operation. **/
 	private final Display display;
+	
+	/** Internal lock for synchronization. **/
+	private final Object lock;
 
 	/** Boolean flag that indicates if the receiver is running or not. **/
 	private volatile boolean running;
@@ -61,6 +67,7 @@ public final class SuggestionConsumer implements Runnable {
 	 */
 	public SuggestionConsumer(final Display display, final boolean showHighlight) {
 		this.display = display;
+		this.lock = new Object();
 		this.running = true;
 		this.queue = new ArrayBlockingQueue<Suggestion>(QUEUE_CAPACITY);
 		this.markers = new ArrayList<IMarker>();
@@ -103,6 +110,9 @@ public final class SuggestionConsumer implements Runnable {
 	public void accept(final Suggestion suggestion) {
 		try {
 			queue.put(suggestion);
+			synchronized (lock) {
+				lock.notify();				
+			}
 		}
 		catch (final InterruptedException e) {
 			EKitePlugin.log(e);
@@ -129,6 +139,14 @@ public final class SuggestionConsumer implements Runnable {
 	@Override
 	public void run() {
 		while (running) {
+			try {
+				synchronized (lock) {
+					lock.wait(TIMEOUT);					
+				}
+			}
+			catch (final InterruptedException e) {
+				EKitePlugin.log(e);
+			}
 			final Suggestion suggestion = queue.poll();
 			if (suggestion != null) {
 				if (currentDocument == null) {
@@ -145,6 +163,9 @@ public final class SuggestionConsumer implements Runnable {
 					clear();
 				}
 			}
+		}
+		if (EKitePlugin.DEBUG) {
+			EKitePlugin.log("Suggestion consumer stopped");
 		}
 	}
 

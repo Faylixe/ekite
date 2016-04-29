@@ -110,10 +110,18 @@ public final class EventReceiver implements Runnable {
 	/**
 	 * Stops the currently running thread
 	 * by setting the running flag to <tt>false</tt>.
+	 * 
+	 * @throws IOException 
 	 */
-	public void shutdown() {
+	public void shutdown() throws IOException {
 		running = false;
-		socket.close();
+		final DatagramSocket signalSocket = new DatagramSocket();
+		final DatagramPacket shutdownPacket = new DatagramPacket(new byte[0], 0, socket.getLocalAddress(), socket.getLocalPort());
+		signalSocket.send(shutdownPacket);
+		signalSocket.close();
+		if (EKitePlugin.DEBUG) {
+			EKitePlugin.log("Shutdown signal sent to local receiver");
+		}
 		consumer.shutdown();
 	}
 
@@ -132,21 +140,27 @@ public final class EventReceiver implements Runnable {
 				if (EKitePlugin.DEBUG) {
 					EKitePlugin.log("Received Kite notification : " + packet.getLength());
 				}
-				final InputStream stream = new ByteArrayInputStream(
-						packet.getData(),
-						packet.getOffset(),
-						packet.getLength());
-				try (final InputStreamReader reader = new InputStreamReader(stream)) {
-					final Suggestion suggestion = gson.fromJson(reader, Suggestion.class);
-					if (EKitePlugin.DEBUG) {
-						EKitePlugin.log("Suggestion received : " + gson.toJson(suggestion));
+				if (packet.getLength() != 0) {
+					final InputStream stream = new ByteArrayInputStream(
+							packet.getData(),
+							packet.getOffset(),
+							packet.getLength());
+					try (final InputStreamReader reader = new InputStreamReader(stream)) {
+						final Suggestion suggestion = gson.fromJson(reader, Suggestion.class);
+						if (EKitePlugin.DEBUG) {
+							EKitePlugin.log("Suggestion received : " + gson.toJson(suggestion));
+						}
+						consumer.accept(suggestion);
 					}
-					consumer.accept(suggestion);
 				}
 			}
 			catch (final IOException e) {
 				EKitePlugin.log(e);
 			}
+		}
+		socket.close();
+		if (EKitePlugin.DEBUG) {
+			EKitePlugin.log("Receiver stopped");
 		}
 	}
 

@@ -34,7 +34,7 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	public static final String PLUGIN_ID = "fr.faylixe.ekite"; //$NON-NLS-1$
 
 	/** Boolean flag that indiciates if the debug ode is active or not. **/
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = Boolean.valueOf(System.getProperty("fr.faylixe.ekite.debug"));
 
 	/** Plugin instance. **/
 	private static EKitePlugin plugin;
@@ -98,12 +98,12 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 			preferences.setHostname(hostname);
 		}
 		else if (EKitePreference.PORT_PROPERTY.equals(property)) {
-			final int port = (int) value;
+			final int port = Integer.valueOf(value.toString());
 			sender.setPort(port);
 			preferences.setPort(port);
 		}
 		else if (EKitePreference.SHOW_HIGHLIGHT_PROPERTY.equals(property)) {
-			final boolean showHighlight = (boolean) value;
+			final boolean showHighlight = Boolean.valueOf(value.toString());
 			receiver.setShowHighlight(showHighlight); 
 			preferences.setShowHighlight(showHighlight);
 		}
@@ -112,7 +112,6 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	/** {@inheritDoc} **/
 	@Override
 	public void stop(final BundleContext context) throws Exception {
-		log("Receiver : " + receiver);
 		this.sender.sendLostFocus();
 		this.receiver.shutdown();
 		plugin = null;
@@ -227,8 +226,11 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 		else {
 			status = new Status(Status.ERROR, PLUGIN_ID, message, exception);			
 		}
-		final ILog logger = getDefault().getLog();
-		logger.log(status);
+		final EKitePlugin instance = getDefault();
+		if (instance != null) {
+			final ILog logger = instance.getLog();
+			logger.log(status);
+		}
 	}
 
 }

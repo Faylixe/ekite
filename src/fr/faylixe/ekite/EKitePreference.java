@@ -23,10 +23,10 @@ public final class EKitePreference {
 	public static final String SHOW_HIGHLIGHT_PROPERTY = "showHighlight";
 
 	/** Default hostname value. **/
-	private static final String DEFAULT_HOSTNAME = "127.0.0.1";
+	public static final String DEFAULT_HOSTNAME = "127.0.0.1";
 
 	/** Default port value. **/
-	private static final int DEFAULT_PORT = 46625;
+	public static final int DEFAULT_PORT = 46625;
 
 	/** Unique instance. **/
 	private static EKitePreference instance;
@@ -60,6 +60,9 @@ public final class EKitePreference {
 	 */
 	public void load(final IPreferenceStore store, final IPropertyChangeListener listener) {
 		final IEclipsePreferences node = InstanceScope.INSTANCE.getNode(EKitePlugin.PLUGIN_ID);
+		store.setDefault(HOSTNAME_PROPERTY, DEFAULT_HOSTNAME);
+		store.setDefault(PORT_PROPERTY, DEFAULT_PORT);
+		store.setDefault(SHOW_HIGHLIGHT_PROPERTY, true);
 		store.setValue(HOSTNAME_PROPERTY, node.get(HOSTNAME_PROPERTY, DEFAULT_HOSTNAME));
 		store.setValue(PORT_PROPERTY, node.getInt(PORT_PROPERTY, DEFAULT_PORT));
 		store.setValue(SHOW_HIGHLIGHT_PROPERTY, node.getBoolean(SHOW_HIGHLIGHT_PROPERTY, true));
