@@ -99,8 +99,18 @@ public final class PartListener implements IPartListener2 {
 	 * 
 	 * @param partRef Editor reference to register listener to.
 	 */
-	private void configure(final IWorkbenchPartReference partRef) {
+	public void configure(final IWorkbenchPartReference partRef) {
 		final IWorkbenchPart part = partRef.getPart(false);
+		configure(part);
+	}
+	
+	/**
+	 * Adds listeners to the editor denoted by the 
+	 * given <tt>partRef</tt>.
+	 * 
+	 * @param part Editor to register listener to.
+	 */
+	public void configure(final IWorkbenchPart part) {
 		if (part != null && part instanceof ITextEditor) {
 			final ITextEditor editor = (ITextEditor) part;
 			final ISelectionProvider selectionProvider = editor.getSelectionProvider();

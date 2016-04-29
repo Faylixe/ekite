@@ -10,10 +10,12 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IPageListener;
 import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -73,8 +75,11 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 					window.addPageListener(EKitePlugin.this);
 					final IWorkbenchPage page = window.getActivePage();
 					if (page != null) {
-						// TODO : Check for restored.
 						page.addPartListener(listener);
+						for (final IEditorReference reference : page.getEditorReferences()) {
+							final IWorkbenchPart part = reference.getPart(false);
+							listener.configure(part);
+						}
 					}
 				}
 			}
