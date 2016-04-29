@@ -30,12 +30,6 @@ public final class EventSender {
 	/** Exception thrown when no file name and document is set. **/
 	private static final IllegalStateException NO_CURRENT_FILE = new IllegalStateException("No current file / document settled.");
 
-	/** Kite server hostname. **/
-	private static final String HOSTNAME = "127.0.0.1";
-
-	/** Kite server port. **/
-	private static final int PORT = 46625;
-
 	/** 2 MB buffer size. **/
 	private static final int BUFFER_SIZE = 2 << 20;
 
@@ -50,6 +44,12 @@ public final class EventSender {
 
 	/** Plugin identifier to use for built event. **/
 	private final String pluginId;
+
+	/** Kite server hostname. **/
+	private String hostname;
+
+	/** Kite server port.  **/
+	private int port;
 
 	/** Currently edited file name. **/
 	private String currentFilename;
@@ -99,6 +99,24 @@ public final class EventSender {
 	public void setCurrentDocument(final IDocument document) {
 		this.currentDocument = document;
 		receiver.setCurrentDocument(document);
+	}
+	
+	/**
+	 * Hostname setter.
+	 * 
+	 * @param hostname Kite server hostname.
+	 */
+	public void setHostname(final String hostname) {
+		this.hostname = hostname;
+	}
+	
+	/**
+	 * Port setter.
+	 * 
+	 * @param port Kite server port.
+	 */
+	public void setPort(final int port) {
+		this.port = port;
 	}
 
 	/**
@@ -205,8 +223,8 @@ public final class EventSender {
 			final byte[] bytes = json.getBytes();
 			final DatagramPacket packet = new DatagramPacket(bytes,
 					bytes.length,
-					InetAddress.getByName(HOSTNAME),
-					PORT);
+					InetAddress.getByName(hostname),
+					port);
 			socket.send(packet);
 		}
 		catch (final IllegalStateException e) {
@@ -218,13 +236,18 @@ public final class EventSender {
 	 * Creates and returns an {@link EventSender} instance.
 	 * 
 	 * @param receiver Receiver instance this sender will be bound to.
+	 * @param hostname Kite socket hostname.
+	 * @param port Kite socket port.
 	 * @return Created instance.
 	 * @throws IOException If any error occurs while creating associated socket.
 	 */
-	public static EventSender create(final EventReceiver receiver) throws IOException {
+	public static EventSender create(final EventReceiver receiver, final String hostname, final int port) throws IOException {
 		final DatagramSocket socket = new DatagramSocket();
 		socket.setSendBufferSize(BUFFER_SIZE);
-		return new EventSender(socket, receiver);
+		final EventSender instance = new EventSender(socket, receiver);
+		instance.setHostname(hostname);
+		instance.setPort(port);
+		return instance;
 	}
 
 }

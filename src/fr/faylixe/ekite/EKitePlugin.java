@@ -5,11 +5,12 @@ import java.io.IOException;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IPageListener;
-import org.eclipse.ui.IStartup;
 import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -25,7 +26,7 @@ import fr.faylixe.ekite.internal.PartListener;
 /**
  * TODO : Plugin documentation.
  */
-public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IPageListener, FocusListener, IStartup {
+public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IPageListener, FocusListener, IPropertyChangeListener {
 
 	/** Plugin id. **/
 	public static final String PLUGIN_ID = "fr.faylixe.ekite"; //$NON-NLS-1$
@@ -50,14 +51,65 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	public void start(final BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+		final EKitePreference preference = EKitePreference.getInstance();
+		preference.load(getPreferenceStore(), this);
+		try {
+			this.receiver = EventReceiver.create(Display.getDefault(), preference.shouldShowHighlight());
+			this.sender = EventSender.create(receiver, preference.getHostname(), preference.getPort());
+			this.receiver.start();
+			this.listener = new PartListener(sender);
+		}
+		catch (final IOException e) {
+			log("An error occurs while initializes Kite support", e);
+		}
+		final IWorkbench workbench = PlatformUI.getWorkbench();
+		workbench.addWindowListener(this);
+		workbench.getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+				if (window != null) {
+					window.getShell().addFocusListener(EKitePlugin.this);
+					window.addPageListener(EKitePlugin.this);
+					final IWorkbenchPage page = window.getActivePage();
+					if (page != null) {
+						// TODO : Check for restored.
+						page.addPartListener(listener);
+					}
+				}
+			}
+		});
+	}
+
+	/** {@inheritDoc} **/
+	@Override
+	public void propertyChange(final PropertyChangeEvent event) {
+		final EKitePreference preferences = EKitePreference.getInstance();
+		final String property = event.getProperty();
+		final Object value = event.getNewValue();
+		if (EKitePreference.HOSTNAME_PROPERTY.equals(property)) {
+			final String hostname = value.toString();
+			sender.setHostname(hostname);
+			preferences.setHostname(hostname);
+		}
+		else if (EKitePreference.PORT_PROPERTY.equals(property)) {
+			final int port = (int) value;
+			sender.setPort(port);
+			preferences.setPort(port);
+		}
+		else if (EKitePreference.SHOW_HIGHLIGHT_PROPERTY.equals(property)) {
+			final boolean showHighlight = (boolean) value;
+			receiver.setShowHighlight(showHighlight); 
+			preferences.setShowHighlight(showHighlight);
+		}
 	}
 
 	/** {@inheritDoc} **/
 	@Override
 	public void stop(final BundleContext context) throws Exception {
 		log("Receiver : " + receiver);
-		this.receiver.shutdown();
 		this.sender.sendLostFocus();
+		this.receiver.shutdown();
 		plugin = null;
 		super.stop(context);
 	}
@@ -111,46 +163,6 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	@Override
 	public void pageOpened(final IWorkbenchPage page) {
 		page.addPartListener(listener);
-	}
-
-	/**
-	 * Creates all components of this plugins.
-	 * 
-	 * @param display Display instance to use for live operation.
-	 */
-	private void initialize(final Display display) {
-		try {
-			this.receiver = EventReceiver.create(display);
-			this.sender = EventSender.create(receiver);
-			this.receiver.start();
-			this.listener = new PartListener(sender);
-		}
-		catch (final IOException e) {
-			log("An error occurs while initializes Kite support", e);
-		}
-	}
-
-	/** {@inheritDoc} **/
-	@Override
-	public void earlyStartup() {
-		final IWorkbench workbench = PlatformUI.getWorkbench();
-		initialize(workbench.getDisplay());
-		workbench.addWindowListener(this);
-		workbench.getDisplay().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-				if (window != null) {
-					window.getShell().addFocusListener(EKitePlugin.this);
-					window.addPageListener(EKitePlugin.this);
-					final IWorkbenchPage page = window.getActivePage();
-					if (page != null) {
-						// TODO : Check for restored.
-						page.addPartListener(listener);
-					}
-				}
-			}
-		});
 	}
 
 	/** {@inheritDoc} **/

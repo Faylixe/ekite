@@ -52,10 +52,10 @@ public final class EventReceiver implements Runnable {
 	 * @param socket Server socket that listens for Kite event.
 	 * @param display Display instance to use for live operation.
 	 */
-	private EventReceiver(final DatagramSocket socket, final Display display) {
+	private EventReceiver(final DatagramSocket socket, final Display display, final boolean showHighlight) {
 		this.socket = socket;
 		this.gson = new Gson();
-		this.consumer = new SuggestionConsumer(display);
+		this.consumer = new SuggestionConsumer(display, showHighlight);
 	}
 
 	/**
@@ -74,6 +74,15 @@ public final class EventReceiver implements Runnable {
 	 */
 	protected void setCurrentDocument(final IDocument document) {
 		consumer.setCurrentDocument(document);
+	}
+
+	/**
+	 * Show highlight flag setter.
+	 * 
+	 * @param showHighlight <tt>true</tt> if highlight should be shown, <tt>false</tt> otherwise.
+	 */
+	public void setShowHighlight(final boolean showHighlight) {
+		consumer.setShowHighlight(showHighlight);
 	}
 
 	/**
@@ -145,12 +154,13 @@ public final class EventReceiver implements Runnable {
 	 * Creates and returns an {@link EventReceiver} instance.
 	 * 
 	 * @param display Display instance to use for live operation.
+	 * @param showHighlight showHighlight <tt>true</tt> if highlight should be shown, <tt>false</tt> otherwise.
 	 * @return Created instance.
 	 * @throws IOException If any error occurs while creating associated socket.
 	 */
-	public static final EventReceiver create(final Display display) throws IOException {
+	public static final EventReceiver create(final Display display, final boolean showHighlight) throws IOException {
 		final DatagramSocket socket = new DatagramSocket(0, InetAddress.getByName(HOSTNAME));
-		return new EventReceiver(socket, display);
+		return new EventReceiver(socket, display, showHighlight);
 	}
 
 }

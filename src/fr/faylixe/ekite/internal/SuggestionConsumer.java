@@ -44,6 +44,9 @@ public final class SuggestionConsumer implements Runnable {
 	/** Boolean flag that indicates if the receiver is running or not. **/
 	private volatile boolean running;
 
+	/** Boolean flag that indicates if the highlight should be shown or not. **/
+	private volatile boolean showHighlight;
+
 	/** Currently edited document model. **/
 	private IDocument currentDocument;
 
@@ -54,12 +57,14 @@ public final class SuggestionConsumer implements Runnable {
 	 * Default constructor. 
 	 *
 	 * @param display Display instance to use for live operation.
+	 * @param showHighlight Indicates if the highlight should be shown or not.
 	 */
-	public SuggestionConsumer(final Display display) {
+	public SuggestionConsumer(final Display display, final boolean showHighlight) {
 		this.display = display;
 		this.running = true;
 		this.queue = new ArrayBlockingQueue<Suggestion>(QUEUE_CAPACITY);
 		this.markers = new ArrayList<IMarker>();
+		this.showHighlight = showHighlight;
 	}
 
 	/**
@@ -78,6 +83,15 @@ public final class SuggestionConsumer implements Runnable {
 	 */
 	protected void setCurrentDocument(final IDocument document) {
 		this.currentDocument = document;
+	}
+	
+	/**
+	 * Show highlight flag setter.
+	 * 
+	 * @param showHighlight <tt>true</tt> if highlight should be shown, <tt>false</tt> otherwise.
+	 */
+	protected void setShowHighlight(final boolean showHighlight) {
+		this.showHighlight = showHighlight;
 	}
 
 	/**
@@ -172,6 +186,9 @@ public final class SuggestionConsumer implements Runnable {
 	 * @param suggestion Suggestion to apply.
 	 */
 	private void highlight(final Suggestion suggestion) {
+		if (!showHighlight) {
+			return;
+		}
 		if (currentFile == null) {
 			EKitePlugin.log("Highlight through null file, abort.");
 			return;

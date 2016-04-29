@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension
-         point="org.eclipse.ui.startup">
-      <startup
-            class="fr.faylixe.ekite.EKitePlugin">
-      </startup>
-   </extension>
 	<extension
 		point="org.eclipse.core.resources.markers"   
         id="fr.faylixe.ekite.marker">
@@ -29,4 +23,12 @@
 	        verticalRulerPreferenceKey="kiteMarkerIndicationInVerticalRuler"
 	        verticalRulerPreferenceValue="true"/>
 	  </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="fr.faylixe.ekite.internal.EKitePreferencePage"
+            id="fr.faylixe.ekite.preference"
+            name="EKite">
+      </page>
+   </extension>
 </plugin>
