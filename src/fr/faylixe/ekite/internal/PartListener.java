@@ -135,8 +135,18 @@ public final class PartListener implements IPartListener2 {
 	 * 
 	 * @param partRef Editor reference to unregister listener of.
 	 */
-	private void unconfigure(final IWorkbenchPartReference partRef) {
+	public void unconfigure(final IWorkbenchPartReference partRef) {
 		final IWorkbenchPart part = partRef.getPart(false);
+		unconfigure(part);
+	}
+
+	/**
+	 * Removes all previously registered listeners for the target
+	 * document of the given <tt>partRef</tt>.
+	 * 
+	 * @param partRef Editor reference to unregister listener of.
+	 */
+	public void unconfigure(final IWorkbenchPart part) {
 		if (part != null && part instanceof ITextEditor) {
 			final ITextEditor editor = (ITextEditor) part;
 			final ISelectionProvider selectionProvider = editor.getSelectionProvider();

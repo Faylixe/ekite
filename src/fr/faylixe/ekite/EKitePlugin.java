@@ -5,8 +5,10 @@ import java.io.IOException;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Display;
@@ -34,7 +36,10 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	public static final String PLUGIN_ID = "fr.faylixe.ekite"; //$NON-NLS-1$
 
 	/** Boolean flag that indiciates if the debug ode is active or not. **/
-	public static final boolean DEBUG = Boolean.valueOf(System.getProperty("fr.faylixe.ekite.debug"));
+	public static final boolean DEBUG = true; //Boolean.valueOf(System.getProperty("fr.faylixe.ekite.debug"));
+
+	/** Error title for eKite error dialog. **/
+	private static final String ERROR_TITLE = "eKite error";
 
 	/** Plugin instance. **/
 	private static EKitePlugin plugin;
@@ -48,6 +53,9 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 	/** Event sender for this Eclipse instance. **/
 	private EventSender sender;
 
+	/** Indicates if eKite is currently active or not. **/
+	private boolean active;
+
 	/** {@inheritDoc} **/
 	@Override
 	public void start(final BundleContext context) throws Exception {
@@ -55,15 +63,68 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 		plugin = this;
 		final EKitePreference preference = EKitePreference.getInstance();
 		preference.load(getPreferenceStore(), this);
-		try {
-			this.receiver = EventReceiver.create(Display.getDefault(), preference.shouldShowHighlight());
-			this.sender = EventSender.create(receiver, preference.getHostname(), preference.getPort());
-			this.receiver.start();
-			this.listener = new PartListener(sender);
+	}
+
+	/** {@inheritDoc} **/
+	@Override
+	public void propertyChange(final PropertyChangeEvent event) {
+		final EKitePreference preferences = EKitePreference.getInstance();
+		final String property = event.getProperty();
+		final Object value = event.getNewValue();
+		if (EKitePreference.HOSTNAME_PROPERTY.equals(property)) {
+			final String hostname = value.toString();
+			if (sender != null) {
+				sender.setHostname(hostname);
+			}
+			preferences.setHostname(hostname);
 		}
-		catch (final IOException e) {
-			log("An error occurs while initializes Kite support", e);
+		else if (EKitePreference.PORT_PROPERTY.equals(property)) {
+			final int port = Integer.valueOf(value.toString());
+			if (sender != null) {
+				sender.setPort(port);
+			}
+			preferences.setPort(port);
 		}
+		else if (EKitePreference.SHOW_HIGHLIGHT_PROPERTY.equals(property)) {
+			final boolean showHighlight = Boolean.valueOf(value.toString());
+			if (receiver != null) {
+				receiver.setShowHighlight(showHighlight); 
+			}
+			preferences.setShowHighlight(showHighlight);
+		}
+	}
+	
+	/**
+	 * Activates eKite.
+	 */
+	public void activate() {
+		if (DEBUG) {
+			log("Activating eKite");
+		}
+		final EKitePreference preference = EKitePreference.getInstance();
+		BusyIndicator.showWhile(Display.getCurrent(), new Runnable() {
+			@Override
+			public void run() {
+				try {
+					receiver = EventReceiver.create(Display.getDefault(), preference.shouldShowHighlight());
+					receiver.start();
+					sender = EventSender.create(receiver, preference.getHostname(), preference.getPort());
+					listener = new PartListener(sender);
+					registerListeners();
+					active = true;
+				}
+				catch (final Throwable e) {
+					EKitePlugin.log(e);
+					showError("An error occurs while activating eKite : " + e.getMessage());
+				}
+			}
+		});
+	}
+	
+	/**
+	 * Registers all listeners (window, focus, document, etc ...)
+	 */
+	private void registerListeners() {
 		final IWorkbench workbench = PlatformUI.getWorkbench();
 		workbench.addWindowListener(this);
 		workbench.getDisplay().syncExec(new Runnable() {
@@ -86,34 +147,75 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 		});
 	}
 
-	/** {@inheritDoc} **/
-	@Override
-	public void propertyChange(final PropertyChangeEvent event) {
-		final EKitePreference preferences = EKitePreference.getInstance();
-		final String property = event.getProperty();
-		final Object value = event.getNewValue();
-		if (EKitePreference.HOSTNAME_PROPERTY.equals(property)) {
-			final String hostname = value.toString();
-			sender.setHostname(hostname);
-			preferences.setHostname(hostname);
+	/**
+	 * Indicates if eKite is active.
+	 * 
+	 * @return <tt>true</tt> if eKite is active, <tt>false</tt> otherwise.
+	 */
+	public boolean isActive() {
+		return active;
+	}
+	
+	/**
+	 * Desactivate eKite.
+	 */
+	public void desactivate() {
+		if (DEBUG) {
+			log("Desactivating eKite");
 		}
-		else if (EKitePreference.PORT_PROPERTY.equals(property)) {
-			final int port = Integer.valueOf(value.toString());
-			sender.setPort(port);
-			preferences.setPort(port);
-		}
-		else if (EKitePreference.SHOW_HIGHLIGHT_PROPERTY.equals(property)) {
-			final boolean showHighlight = Boolean.valueOf(value.toString());
-			receiver.setShowHighlight(showHighlight); 
-			preferences.setShowHighlight(showHighlight);
-		}
+		BusyIndicator.showWhile(Display.getCurrent(), new Runnable() {
+			@Override
+			public void run() {
+				try {
+					sender.sendLostFocus();
+					unregisterListeners();
+					receiver.shutdown();
+					receiver = null;
+					sender = null;
+					listener = null;
+					active = false;
+				}
+				catch (final IOException e) {
+					EKitePlugin.log(e);
+					showError("An error occurs while desactivating eKite : " + e.getMessage());
+				}
+			}
+		});
+	}
+	
+	/**
+	 * Unregisters all listeners (window, focus, document, etc ...)
+	 */
+	private void unregisterListeners() {
+		final IWorkbench workbench = PlatformUI.getWorkbench();
+		workbench.removeWindowListener(this);
+		workbench.getDisplay().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				final IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+				if (window != null) {
+					window.getShell().removeFocusListener(EKitePlugin.this);
+					window.removePageListener(EKitePlugin.this);
+					final IWorkbenchPage page = window.getActivePage();
+					if (page != null) {
+						page.removePartListener(listener);
+						for (final IEditorReference reference : page.getEditorReferences()) {
+							final IWorkbenchPart part = reference.getPart(false);
+							listener.unconfigure(part);
+						}
+					}
+				}
+			}
+		});
 	}
 
 	/** {@inheritDoc} **/
 	@Override
 	public void stop(final BundleContext context) throws Exception {
-		this.sender.sendLostFocus();
-		this.receiver.shutdown();
+		if (isActive()) {
+			this.sender.sendLostFocus();
+			this.receiver.shutdown();
+		}
 		plugin = null;
 		super.stop(context);
 	}
@@ -191,6 +293,23 @@ public class EKitePlugin extends AbstractUIPlugin implements IWindowListener, IP
 		}
 	}
 	
+	/**
+	 * Show an error dialog with the given <tt>message</tt>.
+	 * 
+	 * @param message Error message.
+	 */
+	private static void showError(final String message) {
+		final Display display = Display.getDefault();
+		if (display != null) {
+			display.syncExec(new Runnable() {
+				@Override
+				public void run() {
+					MessageDialog.openError(display.getActiveShell(), ERROR_TITLE, message);
+				}	
+			});
+		}
+	}
+
 	/**
 	 * Shortcut for logging the given <tt>message</tt>
 	 * through this plugin logger.
