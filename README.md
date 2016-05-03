@@ -1,5 +1,7 @@
 # eKite
 
+<a href="http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=2866610" class="drag" title="Drag to your running Eclipse workspace to install eKite"><img class="img-responsive" src="https://marketplace.eclipse.org/sites/all/themes/solstice/public/images/marketplace/btn-install.png" alt="Drag to your running Eclipse workspace to install eKite" /></a>
+
 **eKite** is an [Eclipse](https://eclipse.org/) plugin that brings integration for [Kite](http://kite.com) programming copilot.
 
 ## Installation
